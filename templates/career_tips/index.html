@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Career Tips & Placement Guidance | Campus to Career{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom mb-4">
+    <div class="container">
+        <h2 class="fw-bold mb-1"><i class="bi bi-journal-bookmark-fill text-primary me-2"></i> Career Tips & Placement Guidance</h2>
+        <p class="text-muted small mb-0">Original articles, aptitude test strategies, resume building guides, and interview advice for freshers.</p>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="row g-4">
+        {% for tip in tips %}
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-light text-dark border">{{ tip.category }}</span>
+                    <span class="text-muted small"><i class="bi bi-clock me-1"></i> {{ tip.created_at.strftime('%b %d, %Y') }}</span>
+                </div>
+                <h4 class="fw-bold mb-2">
+                    <a href="{{ url_for('main.career_tip_detail', slug=tip.slug) }}" class="text-decoration-none text-dark hover-orange">{{ tip.title }}</a>
+                </h4>
+                <p class="text-muted small mb-4 flex-grow-1">{{ tip.summary }}</p>
+                
+                <div>
+                    <a href="{{ url_for('main.career_tip_detail', slug=tip.slug) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold">
+                        Read Full Guide <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">No career tips published yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

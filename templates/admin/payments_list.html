@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+
+{% block title %}UPI Payment Submissions - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-credit-card-fill text-warning me-2"></i> UPI Payment Submissions</h3>
+        <p class="text-muted small mb-0">Review student transaction IDs (UTR numbers) submitted to unlock the Premium Study Pass.</p>
+    </div>
+    <span class="badge bg-warning text-dark px-3 py-2 fw-bold fs-6">Total Payments: {{ payments|length }}</span>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 p-4">
+    {% if payments %}
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead class="table-light small">
+                <tr>
+                    <th>Txn ID (UTR Number)</th>
+                    <th>Student Email</th>
+                    <th>Phone / WhatsApp</th>
+                    <th>Amount</th>
+                    <th>Submitted Date</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                <tr>
+                    <td>
+                        <code class="fw-bold fs-6 text-primary">{{ p.txn_id }}</code>
+                    </td>
+                    <td><strong class="text-dark">{{ p.user_email }}</strong></td>
+                    <td><a href="https://wa.me/91{{ p.phone }}" target="_blank" class="text-success fw-bold text-decoration-none"><i class="bi bi-whatsapp me-1"></i> {{ p.phone }}</a></td>
+                    <td><span class="badge bg-success">₹{{ p.amount|int }}</span></td>
+                    <td><span class="text-muted small">{{ p.created_at.strftime('%d %b %Y, %I:%M %p') }}</span></td>
+                    <td class="text-end">
+                        <form action="{{ url_for('admin.payment_delete', id=p.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this payment record?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" title="Delete">
+                                <i class="bi bi-trash me-1"></i> Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-credit-card fs-1 d-block mb-2"></i>
+        <h6 class="fw-bold">No Payment Submissions Yet</h6>
+        <p class="small text-muted mb-0">When students pay via UPI and submit their 12-digit transaction UTR number, it will appear here!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

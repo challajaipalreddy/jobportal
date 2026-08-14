@@ -1,0 +1,110 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Bulk Import Jobs - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i> Bulk Job Import</h3>
+        <p class="text-muted small mb-0">Upload CSV or Excel (.xlsx) files to publish multiple jobs at once.</p>
+    </div>
+    <a href="{{ url_for('admin.download_csv_template') }}" class="btn btn-outline-dark rounded-pill px-3">
+        <i class="bi bi-download me-1"></i> Download CSV Template
+    </a>
+</div>
+
+<!-- Upload Box -->
+<div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+    <form action="{{ url_for('admin.jobs_import') }}" method="POST" enctype="multipart/form-stream" enctype="multipart/form-data">
+        <div class="row align-items-center g-3">
+            <div class="col-md-8">
+                <label class="form-label fw-semibold">Select CSV or Excel File</label>
+                <input type="file" name="import_file" class="form-control" accept=".csv, .xlsx" required>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-accent w-100 rounded-pill">Upload & Validate File</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Validation Preview Table -->
+{% if preview_rows %}
+<div class="card border-0 shadow-sm rounded-4 p-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+        <div>
+            <h5 class="fw-bold mb-0">Import Preview & Validation</h5>
+            <span class="text-muted small">Review parsed rows before saving to database</span>
+        </div>
+    </div>
+
+    <form action="{{ url_for('admin.jobs_import') }}" method="POST">
+        <input type="hidden" name="confirm_import" value="1">
+        <input type="hidden" name="total_rows" value="{{ preview_rows|length }}">
+
+        <div class="table-responsive mb-4">
+            <table class="table table-hover align-middle small mb-0">
+                <thead>
+                    <tr>
+                        <th>Include</th>
+                        <th>Row</th>
+                        <th>Company</th>
+                        <th>Job Title</th>
+                        <th>Location</th>
+                        <th>Application Link</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in preview_rows %}
+                    <tr class="{% if row.status == 'Error' %}table-danger{% elif 'Warning' in row.status %}table-warning{% else %}table-light{% endif %}">
+                        <td>
+                            <input type="checkbox" name="include_row_{{ row.row_num }}" value="1" {% if row.status != 'Error' %}checked{% endif %} class="form-check-input">
+                            <input type="hidden" name="company_{{ row.row_num }}" value="{{ row.company_name }}">
+                            <input type="hidden" name="title_{{ row.row_num }}" value="{{ row.title }}">
+                            <input type="hidden" name="category_{{ row.row_num }}" value="{{ row.category_name }}">
+                            <input type="hidden" name="location_{{ row.row_num }}" value="{{ row.location }}">
+                            <input type="hidden" name="experience_{{ row.row_num }}" value="{{ row.experience }}">
+                            <input type="hidden" name="qualification_{{ row.row_num }}" value="{{ row.qualification }}">
+                            <input type="hidden" name="job_type_{{ row.row_num }}" value="{{ row.job_type }}">
+                            <input type="hidden" name="work_mode_{{ row.row_num }}" value="{{ row.work_mode }}">
+                            <input type="hidden" name="skills_{{ row.row_num }}" value="{{ row.skills }}">
+                            <input type="hidden" name="salary_{{ row.row_num }}" value="{{ row.salary }}">
+                            <input type="hidden" name="short_description_{{ row.row_num }}" value="{{ row.short_description }}">
+                            <input type="hidden" name="description_{{ row.row_num }}" value="{{ row.description }}">
+                            <input type="hidden" name="responsibilities_{{ row.row_num }}" value="{{ row.responsibilities }}">
+                            <input type="hidden" name="eligibility_{{ row.row_num }}" value="{{ row.eligibility }}">
+                            <input type="hidden" name="application_url_{{ row.row_num }}" value="{{ row.application_url }}">
+                            <input type="hidden" name="source_url_{{ row.row_num }}" value="{{ row.source_url }}">
+                            <input type="hidden" name="application_deadline_{{ row.row_num }}" value="{{ row.application_deadline }}">
+                            <input type="hidden" name="youtube_url_{{ row.row_num }}" value="{{ row.youtube_url }}">
+                            <input type="hidden" name="featured_{{ row.row_num }}" value="{% if row.featured %}1{% else %}0{% endif %}">
+                            <input type="hidden" name="status_val_{{ row.row_num }}" value="{{ row.status_val }}">
+                        </td>
+                        <td>#{{ row.row_num }}</td>
+                        <td class="fw-bold">{{ row.company_name }}</td>
+                        <td>{{ row.title }}</td>
+                        <td>{{ row.location }}</td>
+                        <td><a href="{{ row.application_url }}" target="_blank" class="text-truncate d-inline-block" style="max-width: 180px;">{{ row.application_url }}</a></td>
+                        <td>
+                            {% if row.status == 'Ready' %}
+                                <span class="badge bg-success">Ready</span>
+                            {% elif 'Warning' in row.status %}
+                                <span class="badge bg-warning text-dark">{{ row.status }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ row.errors|join(', ') }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 fw-bold">Import Valid Rows Only</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

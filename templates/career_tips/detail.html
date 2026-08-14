@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tip.title }} | Campus to Career{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom mb-4">
+    <div class="container max-w-800">
+        <span class="badge bg-primary mb-2">{{ tip.category }}</span>
+        <h1 class="fw-bold mb-2">{{ tip.title }}</h1>
+        <div class="text-muted small">
+            <span><i class="bi bi-person-fill me-1"></i> By {{ tip.author }}</span>
+            <span class="ms-3"><i class="bi bi-calendar-event me-1"></i> {{ tip.created_at.strftime('%d %B %Y') }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5 max-w-800">
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-5">
+        <div class="lead text-dark mb-4 pb-3 border-bottom font-weight-500">
+            {{ tip.summary }}
+        </div>
+
+        <div class="article-content" style="line-height: 1.8;">
+            {{ tip.content|markdown_to_html|safe }}
+        </div>
+    </div>
+
+    <!-- Related Latest Jobs -->
+    {% if related_jobs %}
+    <div class="mt-5">
+        <h4 class="fw-bold mb-4">Apply Now for Active Opportunities</h4>
+        <div class="row g-4">
+            {% for job in related_jobs %}
+            <div class="col-md-6">
+                <div class="job-card">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="fw-bold text-dark">{{ job.company.name }}</span>
+                        <span class="job-badge badge-fulltime">{{ job.job_type }}</span>
+                    </div>
+                    <a href="{{ url_for('jobs.detail', slug=job.slug) }}" class="job-card-title">{{ job.title }}</a>
+                    <div class="mt-3 text-end">
+                        <a href="{{ url_for('jobs.detail', slug=job.slug) }}" class="btn btn-accent btn-sm rounded-pill px-3">View Job</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

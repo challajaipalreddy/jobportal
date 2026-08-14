@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Jobs & Placement Drives | Campus to Career{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <h2 class="fw-bold mb-1">Browse Opportunities</h2>
+        <p class="text-muted small mb-0">Search and filter through the latest verified jobs, off-campus drives, and internships.</p>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="row g-4">
+        <!-- Sidebar Filter Controls -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 sticky-top" style="top: 90px;">
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-funnel-fill text-primary me-2"></i> Filters</h6>
+                    <a href="{{ url_for('jobs.index') }}" class="text-muted small text-decoration-none">Reset All</a>
+                </div>
+
+                <form action="{{ url_for('jobs.index') }}" method="GET">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Search Keyword</label>
+                        <input type="text" name="q" value="{{ current_keyword }}" class="form-control form-control-sm" placeholder="Title, skill, company...">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Company</label>
+                        <select name="company" class="form-select form-select-sm">
+                            <option value="">All Companies</option>
+                            {% for c in companies %}
+                            <option value="{{ c.id }}" {% if current_company == c.id %}selected{% endif %}>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Category</label>
+                        <select name="category" class="form-select form-select-sm">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if current_category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Job Type</label>
+                        <select name="job_type" class="form-select form-select-sm">
+                            <option value="">All Job Types</option>
+                            <option value="Full-Time" {% if current_job_type == 'Full-Time' %}selected{% endif %}>Full-Time</option>
+                            <option value="Internship" {% if current_job_type == 'Internship' %}selected{% endif %}>Internship</option>
+                            <option value="Contract" {% if current_job_type == 'Contract' %}selected{% endif %}>Contract</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Work Mode</label>
+                        <select name="work_mode" class="form-select form-select-sm">
+                            <option value="">All Modes</option>
+                            <option value="On-site" {% if current_work_mode == 'On-site' %}selected{% endif %}>On-site</option>
+                            <option value="Remote" {% if current_work_mode == 'Remote' %}selected{% endif %}>Remote / WFH</option>
+                            <option value="Hybrid" {% if current_work_mode == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Location</label>
+                        <input type="text" name="location" value="{{ current_location }}" class="form-control form-control-sm" placeholder="e.g. Bangalore, Remote">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Sort By</label>
+                        <select name="sort" class="form-select form-select-sm">
+                            <option value="latest" {% if current_sort == 'latest' %}selected{% endif %}>Latest First</option>
+                            <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+                            <option value="deadline" {% if current_sort == 'deadline' %}selected{% endif %}>Application Deadline</option>
+                            <option value="views" {% if current_sort == 'views' %}selected{% endif %}>Most Viewed</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-accent btn-sm w-100 rounded-pill mt-2">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Job Cards Grid -->
+        <div class="col-lg-9">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="text-muted small">Showing <strong>{{ jobs|length }}</strong> jobs (Page {{ pagination.page }} of {{ pagination.pages or 1 }})</span>
+            </div>
+
+            <div class="row g-4">
+                {% for job in jobs %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="job-card">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            {% if job.get_logo_url() %}
+                                <img src="{{ job.get_logo_url() }}" alt="{{ job.company.name }}" class="company-logo-img">
+                            {% else %}
+                                <div class="company-logo-img d-flex align-items-center justify-content-center fw-bold text-primary fs-5">{{ job.company.name[:2].upper() }}</div>
+                            {% endif %}
+                            <span class="job-badge {% if job.job_type == 'Internship' %}badge-internship{% else %}badge-fulltime{% endif %}">
+                                {{ job.job_type or 'Full-Time' }}
+                            </span>
+                        </div>
+                        <div class="text-muted small mb-1 fw-semibold">{{ job.company.name }}</div>
+                        <a href="{{ url_for('jobs.detail', slug=job.slug) }}" class="job-card-title">{{ job.title }}</a>
+                        
+                        <div class="mt-auto pt-3 border-top">
+                            <div class="job-meta-item mb-1"><i class="bi bi-geo-alt text-danger"></i> {{ job.location or 'India' }}</div>
+                            <div class="job-meta-item mb-2"><i class="bi bi-briefcase text-primary"></i> {{ job.experience or '0–2 Years' }}</div>
+                            
+                            <div class="d-flex align-items-center justify-content-between mt-3">
+                                <span class="text-muted small fw-medium">{{ job.posted_date|time_ago }}</span>
+                                <a href="{{ url_for('jobs.detail', slug=job.slug) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">View Job</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12 text-center py-5 bg-white rounded-4 border">
+                    <i class="bi bi-search text-muted fs-1 mb-2 d-block"></i>
+                    <h5 class="fw-bold">No jobs matched your filter criteria</h5>
+                    <p class="text-muted small">Try broadening your search or resetting the filter options.</p>
+                    <a href="{{ url_for('jobs.index') }}" class="btn btn-accent btn-sm rounded-pill px-4">View All Jobs</a>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if pagination.pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('jobs.index', page=pagination.prev_num, q=current_keyword, company=current_company, category=current_category, location=current_location, job_type=current_job_type, work_mode=current_work_mode, sort=current_sort) }}">Previous</a></li>
+                    {% endif %}
+                    
+                    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                            <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('jobs.index', page=p, q=current_keyword, company=current_company, category=current_category, location=current_location, job_type=current_job_type, work_mode=current_work_mode, sort=current_sort) }}">{{ p }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if pagination.has_next %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('jobs.index', page=pagination.next_num, q=current_keyword, company=current_company, category=current_category, location=current_location, job_type=current_job_type, work_mode=current_work_mode, sort=current_sort) }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

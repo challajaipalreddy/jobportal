@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title or 'Campus to Career | Latest Jobs, Internships & Placement Opportunities' }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Discover the latest job opportunities, internships, hiring drives and placement opportunities for freshers and early career professionals.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}fresher jobs, internships, campus placement, IT jobs, TCS, Infosys, Accenture, Software Engineer jobs{% endblock %}">
+    <link rel="canonical" href="{{ request.url }}">
+    
+    <!-- Open Graph / Social Tags -->
+    <meta property="og:title" content="{% block og_title %}{{ title or 'Campus to Career' }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Discover latest fresher jobs and internships on Campus to Career.{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/og-default.jpg', _external=True) }}{% endblock %}">
+
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- 01. STICKY TOP ANNOUNCEMENT / DISPLAY AD BAR -->
+    <div class="py-2 px-3 text-white text-center position-relative shadow-sm" style="background: linear-gradient(90deg, #0B132B 0%, #101B3B 50%, #0F172A 100%); border-bottom: 2px solid var(--accent-orange); z-index: 1040;">
+        <div class="container d-flex align-items-center justify-content-center flex-wrap gap-2 extra-small">
+            <span class="badge bg-warning text-dark fw-bold"><i class="bi bi-megaphone-fill me-1"></i> DAILY HIRING ALERTS</span>
+            <span class="fw-medium text-light">Join official channels for instant off-campus drive updates & PDF notes:</span>
+            
+            <div class="d-inline-flex gap-2 ms-md-2">
+                <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" class="btn btn-success btn-xs rounded-pill px-3 fw-bold text-white shadow-sm" style="background-color: #25D366; border: none; font-size: 0.75rem;">
+                    <i class="bi bi-whatsapp me-1"></i> WhatsApp Channel
+                </a>
+                <a href="https://www.youtube.com/@CampusToCareerHub" target="_blank" class="btn btn-danger btn-xs rounded-pill px-3 fw-bold text-white shadow-sm" style="background-color: #FF0000; border: none; font-size: 0.75rem;">
+                    <i class="bi bi-youtube me-1"></i> YouTube Channel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand-custom" href="{{ url_for('main.home') }}">
+                <i class="bi bi-mortarboard-fill" style="font-size: 1.8rem; color: var(--accent-orange);"></i>
+                <span>Campus<span style="color: var(--accent-orange)">2</span>Career</span>
+                <span class="brand-badge d-none d-sm-inline-block">JOBS</span>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if request.endpoint == 'main.home' %}active{% endif %}" href="{{ url_for('main.home') }}">
+                            <i class="bi bi-house-door"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if request.endpoint and 'jobs' in request.endpoint %}active{% endif %}" href="{{ url_for('jobs.index') }}">
+                            <i class="bi bi-briefcase"></i> Jobs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if request.endpoint and 'internships' in request.endpoint %}active{% endif %}" href="{{ url_for('internships.index') }}">
+                            <i class="bi bi-award"></i> Internships
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if request.endpoint == 'main.study_materials' %}active{% endif %}" href="{{ url_for('main.study_materials') }}">
+                            <i class="bi bi-file-earmark-pdf text-warning"></i> PDF Notes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if request.endpoint and 'companies' in request.endpoint %}active{% endif %}" href="{{ url_for('companies.index') }}">
+                            <i class="bi bi-buildings"></i> Companies
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom" href="{{ url_for('main.home') }}#categories-section">
+                            <i class="bi bi-grid"></i> Categories
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if request.endpoint == 'main.about' %}active{% endif %}" href="{{ url_for('main.about') }}">
+                            <i class="bi bi-info-circle"></i> About
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{ url_for('jobs.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold">
+                        <i class="bi bi-search me-1"></i> Search Jobs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Notifications Container -->
+    <div class="container mt-2">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0 my-2" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Body Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+
+
+    <!-- FLOATING QUICK-ACCESS AD BUTTONS (BOTTOM-RIGHT STICKY) -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+        <div class="d-flex flex-column gap-2">
+            <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" class="btn btn-success rounded-pill px-3 py-2 fw-bold shadow-lg d-flex align-items-center gap-2 hover-lift" style="background-color: #25D366; border: none; font-size: 0.85rem;" title="Join Official WhatsApp Channel">
+                <i class="bi bi-whatsapp fs-5"></i>
+                <span class="d-none d-sm-inline">WhatsApp Channel</span>
+            </a>
+            <a href="https://www.youtube.com/@CampusToCareerHub" target="_blank" class="btn btn-danger rounded-pill px-3 py-2 fw-bold shadow-lg d-flex align-items-center gap-2 hover-lift" style="background-color: #FF0000; border: none; font-size: 0.85rem;" title="Subscribe on YouTube">
+                <i class="bi bi-youtube fs-5"></i>
+                <span class="d-none d-sm-inline">YouTube Channel</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Ultra High-Contrast Footer -->
+    <footer class="footer-custom pt-5 pb-4 mt-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-mortarboard-fill text-warning fs-3"></i>
+                        <h5 class="fw-bold mb-0 text-white">Campus to Career</h5>
+                    </div>
+                    <p class="small mb-3">Your journey from campus to career. Discover verified daily hiring updates, fresher drives, internships, and preparation guidance for 0-3 years experienced graduates.</p>
+                    
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="https://www.youtube.com/@CampusToCareerHub" target="_blank" class="footer-social-icon" title="YouTube"><i class="bi bi-youtube text-danger fs-5"></i></a>
+                        <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" class="footer-social-icon" title="WhatsApp"><i class="bi bi-whatsapp text-success fs-5"></i></a>
+                        <a href="https://instagram.com" target="_blank" class="footer-social-icon" title="Instagram"><i class="bi bi-instagram text-warning fs-5"></i></a>
+                        <a href="https://linkedin.com" target="_blank" class="footer-social-icon" title="LinkedIn"><i class="bi bi-linkedin text-info fs-5"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-bold mb-3 text-white">Quick Navigation</h6>
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-2"><a href="{{ url_for('main.home') }}" class="footer-link">Home</a></li>
+                        <li class="mb-2"><a href="{{ url_for('jobs.index') }}" class="footer-link">Browse Jobs</a></li>
+                        <li class="mb-2"><a href="{{ url_for('internships.index') }}" class="footer-link">Internships</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.study_materials') }}" class="footer-link">PDF Study Notes</a></li>
+                        <li class="mb-2"><a href="{{ url_for('companies.index') }}" class="footer-link">Companies Directory</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-bold mb-3 text-white">Legal & Compliance</h6>
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-2"><a href="{{ url_for('main.about') }}" class="footer-link">About Us</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.contact') }}" class="footer-link">Contact Us</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.privacy') }}" class="footer-link">Privacy Policy</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.terms') }}" class="footer-link">Terms & Conditions</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.disclaimer') }}" class="footer-link">Disclaimer</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.editorial') }}" class="footer-link">Editorial Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-bold mb-3 text-white"><i class="bi bi-bell-fill text-warning me-1"></i> VIP Daily Job Alerts</h6>
+                    <p class="small mb-2">Get handpicked fresher jobs & internship alerts delivered directly to your inbox.</p>
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success extra-small mb-3 d-inline-block"><i class="bi bi-shield-check me-1"></i> 100% Free & Zero Spam</span>
+                    
+                    <form action="{{ url_for('main.subscribe') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                        <div class="input-group input-group-sm mb-2">
+                            <input type="email" name="email" class="form-control footer-input" placeholder="Enter your email address..." required>
+                            <button class="btn btn-accent px-3 fw-bold" type="submit">Join Free</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+            
+            <hr class="border-secondary my-4" style="opacity: 0.2;">
+            
+            <div class="row align-items-center small" style="color: #94A3B8;">
+                <div class="col-md-6 text-center text-md-start">
+                    &copy; {{ now }} <strong>Campus to Career</strong>. All rights reserved.
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+                    Independent Career Information & Placement Preparation Platform.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CLEAN VIP SOCIAL & EMAIL SUBSCRIPTION POPUP MODAL -->
+    <div class="modal fade" id="joinVipModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="joinVipModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden position-relative">
+                <!-- Close Button (X) Top Right -->
+                <button type="button" onclick="dismissVipModal()" class="btn-close position-absolute top-0 end-0 m-3" style="z-index: 1055;" aria-label="Close"></button>
+                
+                <div class="p-4 p-md-5 text-center bg-white">
+                    <div class="mb-3">
+                        <!-- Brand Badge -->
+                        <div class="d-inline-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-mortarboard-fill fs-3" style="color: var(--accent-orange);"></i>
+                            <span class="fw-bold fs-4 text-dark">Campus<span style="color: var(--accent-orange)">2</span>Career</span>
+                        </div>
+                        <div class="text-uppercase tracking-wider extra-small text-muted fw-bold mb-1">No More Missed Job Deadlines</div>
+                        <h3 class="fw-bold text-dark mb-2" style="letter-spacing: -0.5px;">Get Our Best Placement & Hiring Updates</h3>
+                        <p class="small text-secondary mb-4">We'll help you prepare, practice, & get hired faster.</p>
+                    </div>
+
+                    <!-- Email Subscription Form -->
+                    <form action="{{ url_for('main.subscribe') }}" method="POST" onsubmit="markVipJoined()" class="mb-3">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                        <div class="mb-3">
+                            <input type="email" name="email" class="form-control form-control-lg text-center fs-6 border-2 border-primary" placeholder="Enter your email address..." required style="border-radius: 8px;">
+                        </div>
+                        <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold text-white shadow-sm py-3 text-uppercase fs-6" style="background: #F97316; border: none; border-radius: 8px; letter-spacing: 0.5px;">
+                            Get My Daily Job Alerts &rarr;
+                        </button>
+                    </form>
+
+                    <div class="d-flex align-items-center my-3">
+                        <hr class="flex-grow-1 border-secondary opacity-25">
+                        <span class="px-2 text-muted extra-small fw-bold">OR JOIN DIRECTLY ON</span>
+                        <hr class="flex-grow-1 border-secondary opacity-25">
+                    </div>
+
+                    <!-- Instant Social Channel Buttons -->
+                    <div class="d-flex gap-2 mb-3">
+                        <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" onclick="markVipJoined()" class="btn btn-success btn-sm rounded-pill fw-bold flex-fill py-2 d-flex align-items-center justify-content-center gap-1" style="background-color: #25D366; border: none;">
+                            <i class="bi bi-whatsapp"></i> WhatsApp
+                        </a>
+                        <a href="https://www.youtube.com/@CampusToCareerHub" target="_blank" onclick="markVipJoined()" class="btn btn-danger btn-sm rounded-pill fw-bold flex-fill py-2 d-flex align-items-center justify-content-center gap-1" style="background-color: #FF0000; border: none;">
+                            <i class="bi bi-youtube"></i> YouTube
+                        </a>
+                    </div>
+
+                    <span class="extra-small text-muted" style="font-size: 0.75rem;">Will be used in accordance with our <a href="{{ url_for('main.privacy') }}" class="text-muted text-decoration-underline">Privacy Policy</a>.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ads.js') }}"></script>
+    
+    <script>
+    function markVipJoined() {
+        localStorage.setItem('vip_channel_joined', 'true');
+    }
+
+    function dismissVipModal() {
+        localStorage.setItem('vip_channel_dismissed', 'true');
+        var modalEl = document.getElementById('joinVipModal');
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var hasJoined = localStorage.getItem('vip_channel_joined');
+        var hasDismissed = localStorage.getItem('vip_channel_dismissed');
+        
+        if (!hasJoined && !hasDismissed) {
+            setTimeout(function() {
+                var modalEl = document.getElementById('joinVipModal');
+                if (modalEl) {
+                    var vipModal = new bootstrap.Modal(modalEl);
+                    vipModal.show();
+                }
+            }, 1500);
+        }
+    });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

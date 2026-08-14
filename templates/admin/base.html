@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title or 'Admin Panel - Campus to Career' }}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-light">
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Admin Sidebar -->
+        <div class="col-lg-2 col-md-3 admin-sidebar p-3">
+            <a href="{{ url_for('admin.dashboard') }}" class="d-flex align-items-center gap-2 text-white text-decoration-none mb-4 px-2">
+                <i class="bi bi-mortarboard-fill text-warning fs-3"></i>
+                <span class="fw-bold fs-5">Campus<span class="text-warning">2</span>Career</span>
+            </a>
+            
+            <div class="nav flex-column">
+                <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                </a>
+                <a class="nav-link {% if request.endpoint == 'admin.today_control' %}active{% endif %}" href="{{ url_for('admin.today_control') }}">
+                    <i class="bi bi-calendar-check me-2 text-warning"></i> Today's Jobs
+                </a>
+
+
+                <a class="nav-link {% if 'jobs' in request.endpoint and 'import' not in request.endpoint %}active{% endif %}" href="{{ url_for('admin.jobs_list') }}">
+                    <i class="bi bi-briefcase me-2"></i> Manage Jobs
+                </a>
+                <a class="nav-link {% if 'import' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.jobs_import') }}">
+                    <i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i> Bulk Import Jobs
+                </a>
+                <a class="nav-link {% if 'daily_video' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.daily_video') }}">
+                    <i class="bi bi-youtube me-2 text-danger"></i> Daily Video Update
+                </a>
+                <a class="nav-link {% if 'study' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.study_materials') }}">
+                    <i class="bi bi-file-earmark-pdf me-2 text-danger"></i> PDF Study Materials
+                </a>
+                <a class="nav-link {% if 'companies' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.companies_list') }}">
+                    <i class="bi bi-buildings me-2"></i> Companies
+                </a>
+                <a class="nav-link {% if 'categories' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.categories_list') }}">
+                    <i class="bi bi-tags me-2"></i> Categories
+                </a>
+                <a class="nav-link {% if 'subscribers' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.subscribers_list') }}">
+                    <i class="bi bi-people me-2"></i> Subscribers
+                </a>
+                <a class="nav-link {% if 'messages' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.messages_list') }}">
+                    <i class="bi bi-chat-left-text me-2"></i> Inbox Messages
+                </a>
+                <a class="nav-link {% if 'settings' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.settings') }}">
+                    <i class="bi bi-gear me-2"></i> Settings
+                </a>
+            </div>
+
+            <hr class="border-secondary my-4">
+
+            <div class="px-2">
+                <a href="{{ url_for('main.home') }}" target="_blank" class="btn btn-outline-light btn-sm w-100 mb-2">
+                    <i class="bi bi-globe me-1"></i> View Live Site
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-sm w-100">
+                    <i class="bi bi-box-arrow-right me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-lg-10 col-md-9 p-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm mb-4" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

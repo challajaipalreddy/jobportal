@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Today's Job Control Center - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-calendar-check text-warning me-2"></i> Today's Job Control Center</h3>
+        <p class="text-muted small mb-0">Daily management hub for {{ today_date.strftime('%d %B %Y') }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('admin.job_create') }}" class="btn btn-accent rounded-pill px-3">+ Quick Add Job</a>
+        <a href="{{ url_for('admin.jobs_import') }}" class="btn btn-outline-success rounded-pill px-3"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Import CSV/XLSX</a>
+        <a href="{{ url_for('admin.daily_video') }}" class="btn btn-danger rounded-pill px-3"><i class="bi bi-youtube me-1"></i> Create Daily Video</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card border-success">
+            <span class="text-muted small fw-bold">PUBLISHED TODAY</span>
+            <div class="stat-number text-success">{{ published_today|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card border-secondary">
+            <span class="text-muted small fw-bold">DRAFTS TODAY</span>
+            <div class="stat-number text-secondary">{{ drafts_today|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card border-warning">
+            <span class="text-muted small fw-bold">EXPIRING SOON</span>
+            <div class="stat-number text-warning">{{ expiring_soon|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card border-primary">
+            <span class="text-muted small fw-bold">DAILY VIDEO UPDATES</span>
+            <div class="stat-number text-primary">{{ daily_updates|length }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Jobs Published Today -->
+<div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+    <h5 class="fw-bold mb-3 border-bottom pb-2">Jobs Published Today</h5>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle small mb-0">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Job Title</th>
+                    <th>Location</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for j in published_today %}
+                <tr>
+                    <td class="fw-bold">{{ j.company.name }}</td>
+                    <td><a href="{{ url_for('jobs.detail', slug=j.slug) }}" target="_blank" class="text-decoration-none text-dark fw-semibold">{{ j.title }}</a></td>
+                    <td>{{ j.location }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ j.job_type }}</span></td>
+                    <td><span class="badge bg-success">Active</span></td>
+                    <td class="text-end">
+                        <a href="{{ url_for('admin.job_edit', id=j.id) }}" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-2">Edit</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center py-4 text-muted">No jobs published today yet. Click "+ Quick Add Job" or "Import CSV" above.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

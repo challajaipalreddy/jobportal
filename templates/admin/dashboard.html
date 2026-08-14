@@ -1,0 +1,153 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Admin Control Center</h3>
+        <p class="text-muted small mb-0">Overview of website metrics, job listings, and daily updates.</p>
+    </div>
+    <a href="{{ url_for('admin.job_create') }}" class="btn btn-accent rounded-pill px-3">
+        <i class="bi bi-plus-circle me-1"></i> + Add New Job
+    </a>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <span class="text-muted small fw-semibold">TOTAL JOBS</span>
+            <div class="stat-number mt-1">{{ total_jobs }}</div>
+            <span class="text-success small fw-semibold"><i class="bi bi-calendar-check me-1"></i> {{ jobs_today }} Published Today</span>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <span class="text-muted small fw-semibold">ACTIVE JOBS</span>
+            <div class="stat-number text-success mt-1">{{ active_jobs }}</div>
+            <span class="text-muted small"><i class="bi bi-eye me-1"></i> {{ total_views }} Total Views</span>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <span class="text-muted small fw-semibold">EXPIRED JOBS</span>
+            <div class="stat-number text-danger mt-1">{{ expired_jobs }}</div>
+            <span class="text-muted small"><i class="bi bi-file-earmark me-1"></i> {{ draft_jobs }} Drafts</span>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <span class="text-muted small fw-semibold">YOUTUBE LINKED</span>
+            <div class="stat-number text-primary mt-1">{{ youtube_jobs_count }}</div>
+            <span class="text-muted small"><i class="bi bi-envelope me-1"></i> {{ total_subscribers }} Subscribers</span>
+        </div>
+    </div>
+</div>
+
+<!-- Jobs Expiring Soon Section -->
+{% if expiring_soon_jobs %}
+<div class="card border-warning bg-light shadow-sm rounded-4 mb-4">
+    <div class="card-body">
+        <h6 class="fw-bold text-warning-emphasis mb-2"><i class="bi bi-clock-history me-2"></i> Jobs Expiring Soon (Next 3 Days)</h6>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Company</th>
+                        <th>Deadline</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for j in expiring_soon_jobs %}
+                    <tr>
+                        <td class="fw-semibold">{{ j.title }}</td>
+                        <td>{{ j.company.name }}</td>
+                        <td><span class="badge bg-warning text-dark">{{ j.application_deadline.strftime('%b %d, %Y') }}</span></td>
+                        <td>
+                            <a href="{{ url_for('admin.job_edit', id=j.id) }}" class="btn btn-outline-dark btn-sm rounded-pill py-0 px-2">Update</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Jobs & Recent Inbox -->
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-3">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <h6 class="fw-bold mb-0">Recent Job Postings</h6>
+                <a href="{{ url_for('admin.jobs_list') }}" class="text-muted small text-decoration-none">View All</a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small mb-0">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Job Title</th>
+                            <th>Status</th>
+                            <th>Posted</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for j in recent_jobs %}
+                        <tr>
+                            <td class="fw-semibold">{{ j.company.name }}</td>
+                            <td><a href="{{ url_for('jobs.detail', slug=j.slug) }}" target="_blank" class="text-decoration-none text-dark">{{ j.title }}</a></td>
+                            <td>
+                                {% if j.status == 'Active' %}
+                                    <span class="badge bg-success">Active</span>
+                                {% elif j.status == 'Draft' %}
+                                    <span class="badge bg-secondary">Draft</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ j.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ j.posted_date|time_ago }}</td>
+                            <td class="text-end">
+                                <a href="{{ url_for('admin.job_edit', id=j.id) }}" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-2">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <h6 class="fw-bold mb-0">Recent Contact Messages</h6>
+                <a href="{{ url_for('admin.messages_list') }}" class="text-muted small text-decoration-none">View Inbox</a>
+            </div>
+
+            <div class="list-group list-group-flush small">
+                {% for msg in recent_messages %}
+                <div class="list-group-item px-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong class="text-truncate" style="max-width: 150px;">{{ msg.name }}</strong>
+                        <span class="text-muted extra-small">{{ msg.created_at|time_ago }}</span>
+                    </div>
+                    <div class="text-dark text-truncate">{{ msg.subject }}</div>
+                </div>
+                {% else %}
+                <div class="text-muted text-center py-3">No messages yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

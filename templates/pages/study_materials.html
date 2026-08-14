@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<!-- High-Contrast Luxury Header Hero -->
+<section class="py-5 mb-5 position-relative shadow-sm" style="background: linear-gradient(135deg, #0B132B 0%, #0F172A 100%); border-bottom: 3px solid var(--accent-orange);">
+    <div class="container text-center py-3">
+        <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold fs-6 shadow-sm"><i class="bi bi-file-earmark-pdf-fill me-1"></i> FREE STUDY MATERIAL LIBRARY</span>
+        <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -0.5px;">PDF Notes & Study Material Library</h1>
+        <p class="lead text-light max-w-700 mx-auto mb-4 opacity-90 fw-normal fs-5">Handwritten placement notes, Python & Java coding questions, SQL interview sheets, aptitude shortcuts, and company placement papers.</p>
+        
+        <div class="d-flex justify-content-center flex-wrap gap-2">
+            {% for cat_title in categories.keys() %}
+                <a href="#cat-{{ loop.index }}" class="btn btn-outline-warning btn-sm rounded-pill px-3 fw-bold shadow-sm" style="border-width: 1.5px;">
+                    {{ cat_title.split()[0] }} Notes
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<div class="container mb-5">
+    {% for cat_title, items in categories.items() %}
+    <div class="mb-5" id="cat-{{ loop.index }}">
+        <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+            <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3 fs-3">
+                <i class="bi bi-folder2-open"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-0 text-dark">{{ cat_title }}</h3>
+                <span class="text-muted small fw-medium">{{ items|length }} Verified PDF Documents Available</span>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% for note in items %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100 border-top border-primary border-4 hover-lift">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="p-3 bg-light rounded-3 text-primary fs-4">
+                            <i class="bi {{ note.icon }}"></i>
+                        </div>
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1"><i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF Document</span>
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-2">{{ note.name }}</h5>
+                    <p class="text-secondary small mb-4 flex-grow-1" style="line-height: 1.6;">{{ note.desc }}</p>
+
+                    <div class="d-flex align-items-center gap-2 mt-auto pt-3 border-top">
+                        <a href="{{ url_for('main.download_note', filename=note.file) }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill flex-fill fw-semibold">
+                            <i class="bi bi-eye me-1"></i> View PDF
+                        </a>
+                        <a href="{{ url_for('main.download_note', filename=note.file) }}" download class="btn btn-accent btn-sm rounded-pill flex-fill fw-bold shadow-sm">
+                            <i class="bi bi-download me-1"></i> Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

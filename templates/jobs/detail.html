@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+{% block meta_description %}{{ seo_description }}{% endblock %}
+
+{% block extra_css %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "JobPosting",
+  "title": "{{ job.title }}",
+  "description": "{{ (job.short_description or job.description)|striptags|escape }}",
+  "identifier": {
+    "@type": "PropertyValue",
+    "name": "{{ job.company.name }}",
+    "value": "{{ job.id }}"
+  },
+  "datePosted": "{{ job.posted_date.strftime('%Y-%m-%d') }}",
+  {% if job.application_deadline %}
+  "validThrough": "{{ job.application_deadline.strftime('%Y-%m-%d') }}",
+  {% endif %}
+  "employmentType": "{% if job.job_type == 'Internship' %}INTERN{% else %}FULL_TIME{% endif %}",
+  "hiringOrganization" : {
+    "@type" : "Organization",
+    "name" : "{{ job.company.name }}",
+    "sameAs" : "{{ job.company.website or '' }}",
+    "logo" : "{{ job.get_logo_url() or '' }}"
+  },
+  "jobLocation": {
+    "@type": "Place",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "{{ job.location or 'India' }}",
+      "addressCountry": "IN"
+    }
+  }
+  {% if job.salary %},
+  "baseSalary": {
+    "@type": "MonetaryAmount",
+    "currency": "INR",
+    "value": {
+      "@type": "QuantitativeValue",
+      "value": "{{ job.salary }}",
+      "unitText": "YEAR"
+    }
+  }
+  {% endif %}
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('jobs.index') }}">Jobs</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ job.company.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Expired Job Alert -->
+    {% if is_job_expired %}
+    <div class="alert alert-warning border-warning shadow-sm mb-4 d-flex align-items-center gap-3">
+        <i class="bi bi-exclamation-triangle-fill fs-3 text-warning"></i>
+        <div>
+            <h6 class="fw-bold mb-1">Applications May Be Closed</h6>
+            <p class="mb-0 small">The application deadline for this position has passed or the listing has expired. You may still review the requirements and preparation tips below.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Main Content Area -->
+        <div class="col-lg-8">
+            <!-- Job Header Card -->
+            <div class="job-header-card">
+                <div class="d-flex align-items-start gap-3">
+                    {% if job.get_logo_url() %}
+                        <img src="{{ job.get_logo_url() }}" alt="{{ job.company.name }}" class="company-logo-img" style="width: 70px; height: 70px;">
+                    {% else %}
+                        <div class="company-logo-img d-flex align-items-center justify-content-center fw-bold text-primary fs-3" style="width: 70px; height: 70px;">{{ job.company.name[:2].upper() }}</div>
+                    {% endif %}
+
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="text-muted fw-semibold">{{ job.company.name }}</span>
+                            <span class="badge bg-light text-dark border">{{ job.category.name if job.category else 'Job Drive' }}</span>
+                        </div>
+                        <h1 class="h3 fw-bold mb-2">{{ job.title }}</h1>
+                        
+                        <div class="d-flex flex-wrap gap-3 small text-muted">
+                            <span><i class="bi bi-geo-alt text-danger me-1"></i> {{ job.location or 'India' }}</span>
+                            <span><i class="bi bi-briefcase text-primary me-1"></i> {{ job.experience or '0–2 Years' }}</span>
+                            <span><i class="bi bi-laptop text-success me-1"></i> {{ job.work_mode or 'On-site' }}</span>
+                            <span><i class="bi bi-calendar-event me-1"></i> Posted: {{ job.posted_date|time_ago }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overview Highlights Grid -->
+            <div class="job-section-card">
+                <h5 class="fw-bold mb-3"><i class="bi bi-grid-fill text-primary me-2"></i> Key Overview</h5>
+                <div class="row g-3">
+                    <div class="col-sm-6 col-md-4">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Qualification</span>
+                            <strong class="text-dark">{{ job.qualification or 'Not specified' }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Experience</span>
+                            <strong class="text-dark">{{ job.experience or '0–2 Years' }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Salary / CTC</span>
+                            <strong class="text-dark">{{ job.salary or 'As Per Industry Standard' }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Job Type</span>
+                            <strong class="text-dark">{{ job.job_type or 'Full-Time' }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Work Mode</span>
+                            <strong class="text-dark">{{ job.work_mode or 'On-site' }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Deadline</span>
+                            <strong class="text-dark">
+                                {% if job.application_deadline %}
+                                    {{ job.application_deadline.strftime('%b %d, %Y') }}
+                                {% else %}
+                                    Apply ASAP
+                                {% endif %}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campus to Career Exclusive Analysis -->
+            {% if job.campus_analysis or job.who_can_apply or job.resume_tips or job.interview_tips %}
+            <div class="campus-analysis-card">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-mortarboard-fill text-warning fs-3"></i>
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark">Campus to Career Analysis & Guidance</h5>
+                        <span class="small text-muted">Exclusive insights & preparation advice written by our career team</span>
+                    </div>
+                </div>
+
+                {% if job.campus_analysis %}
+                <div class="mb-3">
+                    <h6 class="fw-bold text-dark"><i class="bi bi-lightbulb-fill text-warning me-1"></i> Why This Job is Worth Considering</h6>
+                    <p class="mb-0 text-dark" style="white-space: pre-line;">{{ job.campus_analysis }}</p>
+                </div>
+                {% endif %}
+
+                {% if job.who_can_apply %}
+                <div class="mb-3">
+                    <h6 class="fw-bold text-dark"><i class="bi bi-people-fill text-primary me-1"></i> Who Should Apply?</h6>
+                    <p class="mb-0 text-dark" style="white-space: pre-line;">{{ job.who_can_apply }}</p>
+                </div>
+                {% endif %}
+
+                {% if job.resume_tips %}
+                <div class="mb-3">
+                    <h6 class="fw-bold text-dark"><i class="bi bi-file-earmark-person-fill text-success me-1"></i> Resume Preparation Tips</h6>
+                    <p class="mb-0 text-dark" style="white-space: pre-line;">{{ job.resume_tips }}</p>
+                </div>
+                {% endif %}
+
+                {% if job.interview_tips %}
+                <div>
+                    <h6 class="fw-bold text-dark"><i class="bi bi-chat-quote-fill text-danger me-1"></i> Expected Interview Rounds & Preparation</h6>
+                    <p class="mb-0 text-dark" style="white-space: pre-line;">{{ job.interview_tips }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Embedded YouTube Video Section -->
+            {% if job.youtube_video_id %}
+            <div class="job-section-card border-danger">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-youtube me-2"></i> Watch Video Explanation</h5>
+                    <a href="{{ job.youtube_video_url }}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill">Watch on YouTube</a>
+                </div>
+                <div class="responsive-iframe-container shadow-sm mb-3">
+                    <iframe src="https://www.youtube.com/embed/{{ job.youtube_video_id }}" title="{{ job.title }}" allowfullscreen></iframe>
+                </div>
+                <p class="small text-muted mb-0"><i class="bi bi-info-circle me-1"></i> Watch our step-by-step video guide explaining the eligibility, test pattern, and official application process.</p>
+            </div>
+            {% endif %}
+
+            <!-- Short Job Summary -->
+            <div class="job-section-card">
+                <h5 class="fw-bold mb-3"><i class="bi bi-file-text me-2 text-primary"></i> Job Summary</h5>
+                <div class="job-body-content" style="white-space: pre-line;">
+                    {{ job.description }}
+                </div>
+
+                {% if job.eligibility %}
+                <hr class="my-4">
+                <h6 class="fw-bold mb-2">Eligibility Criteria</h6>
+                <div style="white-space: pre-line;">{{ job.eligibility }}</div>
+                {% endif %}
+
+                {% if job.skills %}
+                <hr class="my-4">
+                <h6 class="fw-bold mb-2">Required Skills</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for skill in job.skills.split(',') %}
+                        <span class="badge bg-light text-dark border px-3 py-2 fs-6 fw-normal"><i class="bi bi-check2 text-success me-1"></i> {{ skill.strip() }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if job.responsibilities %}
+                <hr class="my-4">
+                <h6 class="fw-bold mb-2">Responsibilities</h6>
+                <div style="white-space: pre-line;">{{ job.responsibilities }}</div>
+                {% endif %}
+
+                <div class="mt-4 p-3 bg-light rounded-3 border d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <span class="small text-muted"><i class="bi bi-info-circle me-1"></i> To read complete unedited company guidelines and submit your application:</span>
+                    <a href="{{ job.application_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-accent btn-sm rounded-pill fw-bold">
+                        Apply on Official Website <i class="bi bi-box-arrow-up-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Ad Slot Placeholder Inside Content -->
+            <div class="ad-slot-container my-3">
+                <span>ADVERTISEMENT</span>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="p-3 bg-light rounded-3 border text-muted small mb-4">
+                <strong><i class="bi bi-shield-exclamation me-1"></i> Platform Disclaimer:</strong> Campus to Career is an independent career information platform. Please verify job details, eligibility, and deadlines on the official employer portal before applying. We never ask for money or fees for job applications.
+            </div>
+
+        </div>
+
+        <!-- Sticky Sidebar -->
+        <div class="col-lg-4">
+            <div class="apply-card-sticky">
+                <h5 class="fw-bold mb-3 text-center">Ready to Apply?</h5>
+                
+                {% if not is_job_expired %}
+                <a href="{{ job.application_url }}" target="_blank" rel="noopener noreferrer" class="btn-apply-large mb-3">
+                    Apply on Official Website <i class="bi bi-box-arrow-up-right ms-2"></i>
+                </a>
+                <p class="text-muted text-center extra-small mb-3"><i class="bi bi-lock-fill me-1"></i> Redirects to official company portal</p>
+                {% else %}
+                <button class="btn btn-secondary btn-lg w-100 mb-3 disabled rounded-pill">Applications Closed</button>
+                {% endif %}
+
+                <hr>
+
+                <!-- Company Details Card -->
+                <div class="mb-3">
+                    <h6 class="fw-bold mb-2">About {{ job.company.name }}</h6>
+                    <p class="small text-muted mb-2">{{ job.company.description or 'Leading employer providing placement and career opportunities.' }}</p>
+                    {% if job.company.website %}
+                    <a href="{{ job.company.website }}" target="_blank" class="small text-decoration-none"><i class="bi bi-globe me-1"></i> Visit Company Website</a>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <!-- Social Share -->
+                <div class="mb-3">
+                    <h6 class="fw-bold mb-2">Share Opportunity</h6>
+                    <div class="d-flex gap-2">
+                        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20job%20opportunity%3A%20{{ request.url }}" target="_blank" class="btn btn-outline-success btn-sm flex-fill"><i class="bi bi-whatsapp"></i></a>
+                        <a href="https://telegram.me/share/url?url={{ request.url }}&text={{ job.title }}" target="_blank" class="btn btn-outline-primary btn-sm flex-fill"><i class="bi bi-telegram"></i></a>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url }}" target="_blank" class="btn btn-outline-info btn-sm flex-fill"><i class="bi bi-linkedin"></i></a>
+                        <button onclick="copyToClipboard('{{ request.url }}')" class="btn btn-outline-secondary btn-sm flex-fill"><i class="bi bi-link-45deg"></i></button>
+                    </div>
+                </div>
+
+                <!-- Sidebar WhatsApp & YouTube Promotional Ad Card -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mt-4 text-center position-relative overflow-hidden" style="background: linear-gradient(135deg, #0B132B 0%, #1E293B 100%); border-top: 3px solid #25D366 !important;">
+                    <span class="badge bg-warning text-dark px-3 py-1 fw-bold extra-small mb-2 mx-auto" style="width: max-content;"><i class="bi bi-bell-fill me-1"></i> DAILY HIRING ALERTS</span>
+                    <h6 class="fw-bold text-white mb-2">Get Off-Campus Drive Updates Directly on WhatsApp & YouTube!</h6>
+                    <p class="text-white-50 extra-small mb-3">Join 15,000+ graduates receiving verified jobs & placement notes daily.</p>
+
+                    <div class="d-grid gap-2">
+                        <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" class="btn btn-success btn-sm rounded-pill fw-bold text-white py-2" style="background-color: #25D366; border: none;">
+                            <i class="bi bi-whatsapp me-1"></i> Join WhatsApp Channel
+                        </a>
+                        <a href="https://www.youtube.com/@CampusToCareerHub" target="_blank" class="btn btn-danger btn-sm rounded-pill fw-bold text-white py-2" style="background-color: #FF0000; border: none;">
+                            <i class="bi bi-youtube me-1"></i> Subscribe YouTube
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

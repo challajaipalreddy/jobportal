@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}{{ update.title }} | Campus to Career{% endblock %}
+
+{% block content %}
+<div class="bg-dark text-white py-5" style="background-color: var(--primary-navy) !important;">
+    <div class="container">
+        <div class="badge bg-warning text-dark mb-2 fw-bold px-3 py-2 fs-6">DAILY JOB UPDATE VIDEO</div>
+        <h1 class="fw-bold text-white mb-2">{{ update.title }}</h1>
+        <p class="text-white-50 mb-0"><i class="bi bi-calendar-event me-1"></i> Published on {{ update.update_date.strftime('%d %B %Y') }}</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row g-4">
+        <!-- Embedded Video Column -->
+        {% if update.youtube_video_id %}
+        <div class="col-lg-12 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-youtube me-2"></i> Watch Complete Job Video Guide</h5>
+                <div class="responsive-iframe-container shadow-sm mb-3">
+                    <iframe src="https://www.youtube.com/embed/{{ update.youtube_video_id }}" title="{{ update.title }}" allowfullscreen></iframe>
+                </div>
+                <a href="{{ update.youtube_video_url }}" target="_blank" class="btn btn-danger btn-sm rounded-pill d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-youtube"></i> Watch on YouTube Channel
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Jobs Listed in Video -->
+        <div class="col-12">
+            <h4 class="fw-bold mb-4">Jobs Featured in Today's Update</h4>
+            <div class="row g-4">
+                {% for job in jobs %}
+                <div class="col-lg-3 col-md-6">
+                    <div class="job-card">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            {% if job.company.logo %}
+                                <img src="{{ job.company.logo }}" alt="{{ job.company.name }}" class="company-logo-img">
+                            {% else %}
+                                <div class="company-logo-img d-flex align-items-center justify-content-center fw-bold text-primary fs-5">{{ job.company.name[:2].upper() }}</div>
+                            {% endif %}
+                            <span class="job-badge badge-fulltime">{{ job.job_type or 'Full-Time' }}</span>
+                        </div>
+                        <div class="text-muted small mb-1 fw-semibold">{{ job.company.name }}</div>
+                        <a href="{{ url_for('jobs.detail', slug=job.slug) }}" class="job-card-title">{{ job.title }}</a>
+                        
+                        <div class="mt-auto pt-3 border-top">
+                            <div class="job-meta-item mb-1"><i class="bi bi-geo-alt text-danger"></i> {{ job.location or 'India' }}</div>
+                            <div class="job-meta-item mb-2"><i class="bi bi-briefcase text-primary"></i> {{ job.experience or '0–2 Years' }}</div>
+                            
+                            <div class="d-flex align-items-center justify-content-between mt-3">
+                                <span class="text-muted small fw-medium">{{ job.posted_date|time_ago }}</span>
+                                <a href="{{ url_for('jobs.detail', slug=job.slug) }}" class="btn btn-accent btn-sm rounded-pill px-3">View & Apply</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12 text-center py-4">
+                    <p class="text-muted">No jobs linked to this video update.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

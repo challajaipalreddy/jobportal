@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Top Hiring Companies | Campus to Career{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom mb-4">
+    <div class="container">
+        <h2 class="fw-bold mb-1">Top Hiring Companies</h2>
+        <p class="text-muted small mb-0">Discover top recruiters, MNCs, and startups hiring freshers and students.</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-between mb-4">
+        <div class="col-md-6">
+            <form action="{{ url_for('companies.index') }}" method="GET" class="d-flex gap-2">
+                <input type="text" name="q" value="{{ search_q }}" class="form-control" placeholder="Search company by name...">
+                <button type="submit" class="btn btn-accent text-nowrap">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for company in companies %}
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <a href="{{ url_for('companies.detail', slug=company.slug) }}" class="card text-decoration-none h-100 border shadow-sm rounded-4 p-3 hover-shadow transition">
+                <div class="d-flex align-items-center gap-3">
+                    {% if company.logo %}
+                        <img src="{{ company.logo }}" alt="{{ company.name }}" class="company-logo-img">
+                    {% else %}
+                        <div class="company-logo-img d-flex align-items-center justify-content-center fw-bold text-primary fs-5">{{ company.name[:2].upper() }}</div>
+                    {% endif %}
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">{{ company.name }}</h6>
+                        <span class="text-muted small"><i class="bi bi-briefcase me-1"></i> View Openings</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">No companies found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

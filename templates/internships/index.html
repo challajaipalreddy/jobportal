@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Latest Internships for Freshers & Students | Campus to Career{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom mb-4">
+    <div class="container">
+        <h2 class="fw-bold mb-1"><i class="bi bi-mortarboard-fill text-success me-2"></i> Internship Opportunities</h2>
+        <p class="text-muted small mb-0">Discover paid and remote internship programs for engineering, management, and diploma students.</p>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="row g-4">
+        <!-- Sidebar Filter -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 sticky-top" style="top: 90px;">
+                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-funnel-fill text-success me-2"></i> Filter Internships</h6>
+                
+                <form action="{{ url_for('internships.index') }}" method="GET">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Keyword</label>
+                        <input type="text" name="q" value="{{ current_keyword }}" class="form-control form-control-sm" placeholder="Title, skill...">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Company</label>
+                        <select name="company" class="form-select form-select-sm">
+                            <option value="">All Companies</option>
+                            {% for c in companies %}
+                            <option value="{{ c.id }}" {% if current_company == c.id %}selected{% endif %}>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Work Mode</label>
+                        <select name="work_mode" class="form-select form-select-sm">
+                            <option value="">All Modes</option>
+                            <option value="Remote" {% if current_work_mode == 'Remote' %}selected{% endif %}>Remote / WFH</option>
+                            <option value="On-site" {% if current_work_mode == 'On-site' %}selected{% endif %}>On-site</option>
+                            <option value="Hybrid" {% if current_work_mode == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill mt-2">Filter Internships</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div class="col-lg-9">
+            <div class="row g-4">
+                {% for job in internships %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="job-card">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            {% if job.company.logo %}
+                                <img src="{{ job.company.logo }}" alt="{{ job.company.name }}" class="company-logo-img">
+                            {% else %}
+                                <div class="company-logo-img d-flex align-items-center justify-content-center fw-bold text-success fs-5">{{ job.company.name[:2].upper() }}</div>
+                            {% endif %}
+                            <span class="job-badge badge-internship">Internship</span>
+                        </div>
+                        <div class="text-muted small mb-1 fw-semibold">{{ job.company.name }}</div>
+                        <a href="{{ url_for('jobs.detail', slug=job.slug) }}" class="job-card-title">{{ job.title }}</a>
+                        
+                        <div class="mt-auto pt-3 border-top">
+                            <div class="job-meta-item mb-1"><i class="bi bi-geo-alt text-danger"></i> {{ job.location or 'Remote' }}</div>
+                            <div class="job-meta-item mb-2"><i class="bi bi-currency-rupee text-success"></i> {{ job.salary or 'Stipend Provided' }}</div>
+                            
+                            <div class="d-flex align-items-center justify-content-between mt-3">
+                                <span class="text-muted small">{{ job.posted_date|time_ago }}</span>
+                                <a href="{{ url_for('jobs.detail', slug=job.slug) }}" class="btn btn-outline-success btn-sm rounded-pill px-3">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12 text-center py-5 bg-white border rounded-4">
+                    <p class="text-muted mb-0">No internships found matching your filter.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

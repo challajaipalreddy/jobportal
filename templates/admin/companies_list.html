@@ -1,0 +1,97 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Companies - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Manage Companies</h3>
+        <p class="text-muted small mb-0">Add and manage hiring companies and employer brand profiles.</p>
+    </div>
+    <button class="btn btn-accent rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+        <i class="bi bi-plus-circle me-1"></i> + Add New Company
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 p-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle small mb-0">
+            <thead>
+                <tr>
+                    <th>Logo</th>
+                    <th>Company Name</th>
+                    <th>Slug</th>
+                    <th>Website</th>
+                    <th>Jobs Count</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in companies %}
+                <tr>
+                    <td>
+                        {% if c.logo %}
+                            <img src="{{ c.logo }}" alt="{{ c.name }}" style="width: 35px; height: 35px; object-fit: contain;">
+                        {% else %}
+                            <span class="badge bg-secondary">{{ c.name[:2].upper() }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-semibold">{{ c.name }}</td>
+                    <td><code>{{ c.slug }}</code></td>
+                    <td>
+                        {% if c.website %}
+                            <a href="{{ c.website }}" target="_blank" class="text-decoration-none"><i class="bi bi-globe"></i> {{ c.website }}</a>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td><span class="badge bg-light text-dark border">{{ c.jobs.count() }} Jobs</span></td>
+                    <td class="text-end">
+                        <form action="{{ url_for('admin.company_delete', id=c.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Deleting company will remove all associated jobs. Proceed?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill py-0 px-2">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center py-4 text-muted">No companies created yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Add Company -->
+<div class="modal fade" id="addCompanyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-header-title fw-bold mb-0">Add New Company</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.company_create') }}" method="POST">
+                {{ form.hidden_tag() }}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label fw-semibold") }}
+                        {{ form.name(class="form-control", placeholder="e.g. Tata Consultancy Services") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.logo.label(class="form-label fw-semibold") }}
+                        {{ form.logo(class="form-control", placeholder="https://example.com/logo.png or static image path") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.website.label(class="form-label fw-semibold") }}
+                        {{ form.website(class="form-control", placeholder="https://www.tcs.com") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label fw-semibold") }}
+                        {{ form.description(class="form-control", rows=3, placeholder="Company overview...") }}
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    {{ form.submit(class="btn btn-accent rounded-pill") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

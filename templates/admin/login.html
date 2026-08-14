@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Campus to Career</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-dark d-flex align-items-center justify-content-center min-vh-100 py-5" style="background-color: var(--primary-navy) !important;">
+
+    <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5" style="max-width: 420px; width: 100%;">
+        <div class="text-center mb-4">
+            <i class="bi bi-mortarboard-fill text-warning fs-1"></i>
+            <h4 class="fw-bold mt-2 text-dark">Campus to Career</h4>
+            <p class="text-muted small mb-0">Admin Authentication Portal</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show small" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('auth.login') }}" method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.email.label(class="form-label fw-semibold") }}
+                {{ form.email(class="form-control", placeholder="admin@campustocareer.com") }}
+            </div>
+
+            <div class="mb-3">
+                {{ form.password.label(class="form-label fw-semibold") }}
+                {{ form.password(class="form-control", placeholder="••••••••") }}
+            </div>
+
+            <div class="form-check mb-4">
+                {{ form.remember_me(class="form-check-input") }}
+                {{ form.remember_me.label(class="form-check-label small") }}
+            </div>
+
+            <button type="submit" class="btn btn-accent btn-lg w-100 rounded-pill">Sign In to Dashboard</button>
+        </form>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.home') }}" class="text-muted small text-decoration-none"><i class="bi bi-arrow-left me-1"></i> Return to Main Website</a>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/bootstrap.bundle.min.js"></script>
+</body>
+</html>

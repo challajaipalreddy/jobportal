@@ -1,0 +1,111 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage PDF Study Materials - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-file-earmark-pdf text-danger me-2"></i> PDF Notes & Study Material Library</h3>
+        <p class="text-muted small mb-0">Upload new PDF study materials for students to view & download freely.</p>
+    </div>
+    <a href="{{ url_for('main.study_materials') }}" target="_blank" class="btn btn-outline-primary rounded-pill px-3 fw-semibold">
+        <i class="bi bi-box-arrow-up-right me-1"></i> View Public PDF Library
+    </a>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Left Column: Upload New PDF Form -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h5 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-cloud-arrow-up-fill text-primary me-2"></i> Upload New PDF Note</h5>
+            
+            <form action="{{ url_for('admin.study_materials') }}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">PDF Title *</label>
+                    <input type="text" name="title" class="form-control" placeholder="e.g. Complete Python 140+ Interview Codes" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Category *</label>
+                    <select name="category" class="form-select" required>
+                        <option value="Python Notes & Coding">Python Notes & Coding</option>
+                        <option value="Java & OOPs Notes">Java & OOPs Notes</option>
+                        <option value="SQL & Database Notes">SQL & Database Notes</option>
+                        <option value="Aptitude & Reasoning Notes">Aptitude & Reasoning Notes</option>
+                        <option value="Company Specific Placement Notes">Company Specific Placement Notes</option>
+                        <option value="Data Science & Power BI Notes">Data Science & Power BI Notes</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Select PDF File (.pdf) *</label>
+                    <input type="file" name="pdf_file" class="form-control" accept=".pdf" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Brief Description</label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="Short description of what students will learn in this PDF..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold py-2 shadow-sm">
+                    <i class="bi bi-upload me-1"></i> Upload & Publish PDF
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Column: Uploaded PDFs Table -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h5 class="fw-bold border-bottom pb-2 mb-3">Uploaded PDF Notes Library ({{ materials|length }})</h5>
+
+            {% if materials %}
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>PDF Title</th>
+                            <th>Category</th>
+                            <th>Downloads</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in materials %}
+                        <tr>
+                            <td>
+                                <strong class="text-dark d-block mb-1">{{ m.title }}</strong>
+                                <span class="text-muted extra-small"><i class="bi bi-calendar-event me-1"></i> {{ m.created_at.strftime('%b %d, %Y') }}</span>
+                            </td>
+                            <td><span class="badge bg-light text-dark border extra-small">{{ m.category }}</span></td>
+                            <td><span class="fw-bold">{{ m.download_count }}</span></td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="/{{ m.file_path }}" target="_blank" class="btn btn-outline-primary" title="View PDF">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <form action="{{ url_for('admin.study_material_delete', id=m.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this PDF?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                                        <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-folder-symlink fs-1 d-block mb-2"></i>
+                <p class="mb-0">No custom uploaded PDFs yet. Upload a file on the left!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

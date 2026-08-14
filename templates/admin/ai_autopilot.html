@@ -1,0 +1,99 @@
+{% extends "admin/base.html" %}
+
+{% block title %}AI Autopilot Job Finder & Crawler - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-robot text-primary me-2"></i> AI Autopilot Job Finder & Publisher</h3>
+        <p class="text-muted small mb-0">Automatically scan target company career portals, extract fresher drives & internships, deduplicate, and publish to Campus to Career.</p>
+    </div>
+    <form action="{{ url_for('admin.ai_autopilot') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+        <input type="hidden" name="action" value="run_crawler">
+        <button type="submit" class="btn btn-accent btn-lg rounded-pill px-4 fw-bold shadow-lg text-white">
+            <i class="bi bi-play-fill fs-5 me-1"></i> Run AI Autopilot Now
+        </button>
+    </form>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Left Column: Autopilot Controls & Status -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <h5 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-sliders text-warning me-2"></i> Autopilot Configuration</h5>
+            
+            <div class="mb-4">
+                <span class="text-muted extra-small d-block mb-1">LAST AUTOMATED RUN</span>
+                <strong class="text-dark fs-6"><i class="bi bi-clock-history me-1 text-primary"></i> {{ last_run }}</strong>
+            </div>
+
+            <form action="{{ url_for('admin.ai_autopilot') }}" method="POST" class="mb-3 border-top pt-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                <input type="hidden" name="action" value="toggle_setting">
+                
+                <label class="form-label fw-semibold small">Publishing Mode when Admin is Busy</label>
+                <div class="mb-3">
+                    <div class="form-check form-radio mb-2">
+                        <input class="form-check-input" type="radio" name="auto_publish" id="pubLive" value="true" {% if auto_publish %}checked{% endif %}>
+                        <label class="form-check-label fw-bold text-success" for="pubLive">
+                            ⚡ Auto-Publish Live Immediately
+                        </label>
+                        <span class="text-muted extra-small d-block ms-4">Jobs are automatically published live to the website without manual intervention.</span>
+                    </div>
+
+                    <div class="form-check form-radio">
+                        <input class="form-check-input" type="radio" name="auto_publish" id="pubDraft" value="false" {% if not auto_publish %}checked{% endif %}>
+                        <label class="form-check-label fw-bold text-warning" for="pubDraft">
+                            📝 Save as Drafts for Approval
+                        </label>
+                        <span class="text-muted extra-small d-block ms-4">Jobs are pre-filled by AI and saved under Drafts for 1-click admin approval.</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-outline-primary rounded-pill btn-sm fw-bold">Save Publishing Mode</button>
+            </form>
+        </div>
+
+        <!-- Target Company Career Portals Card -->
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h5 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-buildings-fill text-primary me-2"></i> Monitored Career Portals</h5>
+            <p class="text-muted extra-small mb-3">AI Autopilot continuously monitors direct career portals & off-campus hubs for freshers (0-2 years exp):</p>
+            
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-light text-dark border p-2"><i class="bi bi-building me-1 text-primary"></i> TCS Careers & NQT</span>
+                <span class="badge bg-light text-dark border p-2"><i class="bi bi-building me-1 text-info"></i> Infosys Launchpad</span>
+                <span class="badge bg-light text-dark border p-2"><i class="bi bi-building me-1 text-secondary"></i> Accenture Early Careers</span>
+                <span class="badge bg-light text-dark border p-2"><i class="bi bi-building me-1 text-primary"></i> Wipro Elite NTH</span>
+                <span class="badge bg-light text-dark border p-2"><i class="bi bi-building me-1 text-success"></i> Deloitte Campus USI</span>
+                <span class="badge bg-light text-dark border p-2"><i class="bi bi-building me-1 text-info"></i> Cognizant GenC</span>
+                <span class="badge bg-light text-dark border p-2"><i class="bi bi-building me-1 text-danger"></i> Google University Grad</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Realtime AI Execution Console Log -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-dark text-light font-monospace">
+            <div class="d-flex align-items-center justify-content-between border-bottom border-secondary pb-2 mb-3">
+                <h5 class="fw-bold text-warning mb-0"><i class="bi bi-terminal-fill me-2"></i> AI Autopilot Execution Console</h5>
+                <span class="badge bg-success">Status: Online</span>
+            </div>
+
+            {% if logs %}
+            <div class="console-output overflow-auto" style="max-height: 450px;">
+                {% for log in logs %}
+                    <div class="mb-1 text-light extra-small">{{ log }}</div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-cpu fs-1 d-block mb-2 text-secondary"></i>
+                <p class="mb-1 text-light">AI Autopilot Console Ready.</p>
+                <span class="extra-small text-muted">Click 'Run AI Autopilot Now' to trigger automatic job discovery & publishing.</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

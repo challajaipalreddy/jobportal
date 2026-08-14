@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Opportunity Not Found - Campus to Career{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5 my-5">
+    <div class="display-1 fw-bold text-primary mb-3">404</div>
+    <h3 class="fw-bold mb-3">Oops! This opportunity couldn't be found.</h3>
+    <p class="text-muted mb-4 max-w-600 mx-auto">The job listing or page you are looking for may have been removed, renamed, or is temporarily unavailable.</p>
+    <a href="{{ url_for('jobs.index') }}" class="btn btn-accent btn-lg rounded-pill px-4">Browse Latest Jobs</a>
+</div>
+{% endblock %}

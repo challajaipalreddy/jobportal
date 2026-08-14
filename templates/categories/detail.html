@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} Jobs for Freshers | Campus to Career{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom mb-4">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3">
+            <div class="category-icon-box m-0" style="width: 60px; height: 60px; font-size: 1.8rem;">
+                <i class="bi {{ category.icon or 'bi-briefcase' }}"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold mb-1">{{ category.name }} Jobs</h2>
+                <p class="text-muted small mb-0">{{ category.description or 'Explore verified career opportunities in ' ~ category.name ~ '.' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="row g-4">
+        {% for job in jobs %}
+        <div class="col-lg-4 col-md-6">
+            <div class="job-card">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    {% if job.company.logo %}
+                        <img src="{{ job.company.logo }}" alt="{{ job.company.name }}" class="company-logo-img">
+                    {% else %}
+                        <div class="company-logo-img d-flex align-items-center justify-content-center fw-bold text-primary fs-5">{{ job.company.name[:2].upper() }}</div>
+                    {% endif %}
+                    <span class="job-badge badge-fulltime">{{ job.job_type or 'Full-Time' }}</span>
+                </div>
+                <div class="text-muted small mb-1 fw-semibold">{{ job.company.name }}</div>
+                <a href="{{ url_for('jobs.detail', slug=job.slug) }}" class="job-card-title">{{ job.title }}</a>
+                
+                <div class="mt-auto pt-3 border-top">
+                    <div class="job-meta-item mb-1"><i class="bi bi-geo-alt text-danger"></i> {{ job.location or 'India' }}</div>
+                    <div class="job-meta-item mb-2"><i class="bi bi-briefcase text-primary"></i> {{ job.experience or '0–2 Years' }}</div>
+                    
+                    <div class="d-flex align-items-center justify-content-between mt-3">
+                        <span class="text-muted small">{{ job.posted_date|time_ago }}</span>
+                        <a href="{{ url_for('jobs.detail', slug=job.slug) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">View Job</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5 bg-white border rounded-4">
+            <p class="text-muted mb-0">No active jobs found under {{ category.name }}. Check back soon!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

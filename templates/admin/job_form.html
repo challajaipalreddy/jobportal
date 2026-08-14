@@ -1,0 +1,390 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ action }} Job - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">{{ action }} Job Posting</h3>
+        <p class="text-muted small mb-0">Fill in job details, company logo, eligibility, application links, and Campus to Career guidance.</p>
+    </div>
+    <a href="{{ url_for('admin.jobs_list') }}" class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i> Back to Jobs
+    </a>
+</div>
+
+{% if possible_duplicate %}
+<div class="alert alert-warning border-warning shadow-sm rounded-4 p-4 mb-4">
+    <div class="d-flex align-items-center gap-3 mb-2">
+        <i class="bi bi-exclamation-triangle-fill fs-3 text-warning"></i>
+        <div>
+            <h5 class="fw-bold mb-1">Possible Duplicate Job Detected</h5>
+            <p class="mb-0 small">A job with the same company and similar title already exists in the database: <strong>{{ possible_duplicate.company.name }} — {{ possible_duplicate.title }}</strong></p>
+        </div>
+    </div>
+    <div class="mt-3 d-flex gap-2">
+        <a href="{{ url_for('admin.job_edit', id=possible_duplicate.id) }}" target="_blank" class="btn btn-dark btn-sm rounded-pill">Review Existing Job</a>
+        <button type="submit" name="force_publish" value="1" onclick="document.querySelector('form').submit();" class="btn btn-outline-warning btn-sm rounded-pill text-dark">Publish Anyway</button>
+    </div>
+</div>
+{% endif %}
+
+<!-- AI Auto-Fill Assistant Card -->
+<div class="card border-primary bg-light shadow-sm rounded-4 p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="fw-bold text-primary mb-0"><i class="bi bi-robot me-2"></i> AI Auto-Fill Assistant</h5>
+        <span class="badge bg-primary">Paste Raw Post</span>
+    </div>
+    <p class="text-muted small mb-3">Paste raw job description / notification text below, and AI will automatically parse and fill company name, title, qualifications, skills, salary, eligibility, responsibilities, and guidance for you!</p>
+    
+    <div class="mb-3">
+        <textarea id="ai-raw-text" class="form-control" rows="4" placeholder="Paste complete raw job post text here (copied from LinkedIn, email, PDF, or website)..."></textarea>
+    </div>
+    <div class="d-flex justify-content-end">
+        <button type="button" id="btn-ai-parse" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+            <i class="bi bi-magic me-1"></i> Auto-Fill Entire Form With AI
+        </button>
+    </div>
+</div>
+
+<form action="" method="POST">
+    {{ form.hidden_tag() }}
+    
+    <div class="row g-4">
+        <!-- Main Form Column -->
+        <div class="col-lg-8">
+            
+            <!-- Basic Information Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-info-circle text-primary me-2"></i> Basic Information</h5>
+                
+                <div class="row g-3">
+                    <!-- Select Existing Company -->
+                    <div class="col-md-6">
+                        {{ form.company_id.label(class="form-label fw-semibold small") }}
+                        {{ form.company_id(class="form-select") }}
+                    </div>
+
+                    <!-- OR Type New Company Name -->
+                    <div class="col-md-6 bg-light p-2 rounded-3 border">
+                        <label class="form-label fw-bold text-success small mb-1"><i class="bi bi-plus-circle me-1"></i> Or Type New Company Name</label>
+                        {{ form.new_company_name(class="form-control form-control-sm", placeholder="e.g. Google, Microsoft, Wipro...") }}
+                        <span class="text-muted extra-small">Auto-creates company if not in dropdown list.</span>
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.company_logo.label(class="form-label fw-semibold small") }}
+                        {{ form.company_logo(class="form-control", placeholder="https://example.com/logo.png (Optional Direct Logo URL)") }}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.category_id.label(class="form-label fw-semibold small") }}
+                        {{ form.category_id(class="form-select") }}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.title.label(class="form-label fw-semibold small") }}
+                        {{ form.title(class="form-control", placeholder="e.g. TCS Software Engineer – Freshers") }}
+                    </div>
+
+                    <div class="col-md-4">
+                        {{ form.job_type.label(class="form-label fw-semibold small") }}
+                        {{ form.job_type(class="form-select") }}
+                    </div>
+
+                    <div class="col-md-4">
+                        {{ form.work_mode.label(class="form-label fw-semibold small") }}
+                        {{ form.work_mode(class="form-select") }}
+                    </div>
+
+                    <div class="col-md-4">
+                        {{ form.location.label(class="form-label fw-semibold small") }}
+                        {{ form.location(class="form-control", placeholder="e.g. Across India / Remote") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eligibility & Qualifications Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-mortarboard text-success me-2"></i> Eligibility & Qualifications</h5>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        {{ form.qualification.label(class="form-label fw-semibold small") }}
+                        {{ form.qualification(class="form-control", placeholder="e.g. B.Tech / B.E / BCA / MCA / MBA") }}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.experience.label(class="form-label fw-semibold small") }}
+                        {{ form.experience(class="form-control", placeholder="e.g. 0–2 Years / Freshers") }}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.skills.label(class="form-label fw-semibold small") }}
+                        {{ form.skills(class="form-control", placeholder="e.g. Python, SQL, Data Structures, Problem Solving") }}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.eligibility.label(class="form-label fw-semibold small") }}
+                        {{ form.eligibility(class="form-control", rows=3, placeholder="Detailed eligibility criteria, batch years (e.g. 2024, 2025, 2026 graduates)...") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Overview & Description Card (Single Clean Section!) -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-file-text text-info me-2"></i> Job Overview & Details</h5>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        {{ form.description.label(class="form-label fw-semibold small") }}
+                        {{ form.description(class="form-control", rows=5, placeholder="Concise overview of the job role...") }}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.responsibilities.label(class="form-label fw-semibold small") }}
+                        {{ form.responsibilities(class="form-control", rows=4, placeholder="Key responsibilities and day-to-day duties...") }}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.salary.label(class="form-label fw-semibold small") }}
+                        {{ form.salary(class="form-control", placeholder="e.g. ₹ 7.0 LPA or Stipend: ₹ 25,000/month") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campus to Career Analysis Card (With Magic Auto-Fill Button!) -->
+            <div class="card border-warning bg-light shadow-sm rounded-4 p-4 mb-4">
+                <div class="d-flex align-items-center justify-content-between border-bottom border-warning pb-2 mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-star-fill text-warning me-2"></i> Campus to Career Analysis (Original Guidance)</h5>
+                    <button type="button" id="btn-auto-generate" class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3 shadow-sm">
+                        <i class="bi bi-magic me-1"></i> Auto-Generate Guidance
+                    </button>
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        {{ form.campus_analysis.label(class="form-label fw-semibold small") }}
+                        {{ form.campus_analysis(class="form-control", rows=3, placeholder="Why is this job opportunity worth considering for students?") }}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.who_can_apply.label(class="form-label fw-semibold small") }}
+                        {{ form.who_can_apply(class="form-control", rows=2, placeholder="Original explanation of target candidates...") }}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.resume_tips.label(class="form-label fw-semibold small") }}
+                        {{ form.resume_tips(class="form-control", rows=3, placeholder="Resume tips specific to this job application...") }}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.interview_tips.label(class="form-label fw-semibold small") }}
+                        {{ form.interview_tips(class="form-control", rows=3, placeholder="Expected interview rounds & preparation guidance...") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Links Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-link-45deg text-success me-2"></i> Application & Source URLs</h5>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        {{ form.application_url.label(class="form-label fw-semibold small") }}
+                        {{ form.application_url(class="form-control", placeholder="https://careers.company.com/apply/12345") }}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.source_url.label(class="form-label fw-semibold small") }}
+                        {{ form.source_url(class="form-control", placeholder="Official notification URL") }}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.application_deadline.label(class="form-label fw-semibold small") }}
+                        {{ form.application_deadline(class="form-control", type="date") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- YouTube Video Integration Prompt & Fields -->
+            <div class="card border-danger bg-light shadow-sm rounded-4 p-4 mb-4" id="video-section">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" id="toggle-video-input" name="has_youtube_video" {% if (form.youtube_video_url.data or (job and job.youtube_video_id)) %}checked{% endif %}>
+                        <label class="form-check-label fw-bold text-danger fs-6 cursor-pointer" for="toggle-video-input">
+                            <i class="bi bi-youtube me-2"></i> Are you attaching a YouTube video explanation for this job?
+                        </label>
+                    </div>
+                </div>
+
+                <div id="video-fields-container" class="mt-3" style="{% if not (form.youtube_video_url.data or (job and job.youtube_video_id)) %}display: none;{% endif %}">
+                    <hr class="border-danger my-3">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            {{ form.youtube_video_url.label(class="form-label fw-semibold small") }}
+                            {{ form.youtube_video_url(class="form-control", placeholder="https://youtu.be/trhZ4YJXo28?si=ImQ-KnF7Qu4WImRt") }}
+                            <span class="text-muted extra-small mt-1 d-block">Paste your YouTube video link explaining this job position.</span>
+                        </div>
+
+                        <div class="col-12">
+                            {{ form.youtube_title.label(class="form-label fw-semibold small") }}
+                            {{ form.youtube_title(class="form-control", placeholder="e.g. Deloitte Remote Data Analyst Internship 2026 | Stipend ₹30k") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Column (Publishing & Checklist) -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 20px;">
+                <h5 class="fw-bold border-bottom pb-2 mb-3">Publishing Control</h5>
+                
+                <div class="mb-3">
+                    {{ form.status.label(class="form-label fw-semibold small") }}
+                    {{ form.status(class="form-select") }}
+                </div>
+
+                <div class="form-check mb-4">
+                    {{ form.featured(class="form-check-input") }}
+                    {{ form.featured.label(class="form-check-label fw-semibold small") }}
+                </div>
+
+                {{ form.submit(class="btn btn-accent btn-lg w-100 rounded-pill mb-3") }}
+
+                <hr>
+
+                <!-- Job Quality Pre-Publish Checklist -->
+                <h6 class="fw-bold mb-3"><i class="bi bi-card-checklist text-primary me-2"></i> Quality Checklist</h6>
+                <div class="small">
+                    <div id="chk-company" class="mb-2 text-muted"><i class="bi bi-dash-circle check-icon me-2"></i> Company Selected / Typed</div>
+                    <div id="chk-title" class="mb-2 text-muted"><i class="bi bi-dash-circle check-icon me-2"></i> Title Entered</div>
+                    <div id="chk-location" class="mb-2 text-muted"><i class="bi bi-dash-circle check-icon me-2"></i> Location Specified</div>
+                    <div id="chk-eligibility" class="mb-2 text-muted"><i class="bi bi-dash-circle check-icon me-2"></i> Eligibility Defined</div>
+                    <div id="chk-appurl" class="mb-2 text-muted"><i class="bi bi-dash-circle check-icon me-2"></i> Application Link Added</div>
+                    <div id="chk-description" class="mb-2 text-muted"><i class="bi bi-dash-circle check-icon me-2"></i> Description Added</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const btnAiParse = document.getElementById('btn-ai-parse');
+    if (btnAiParse) {
+        btnAiParse.addEventListener('click', function() {
+            const rawText = document.getElementById('ai-raw-text').value;
+            if (!rawText.trim()) {
+                alert('Please paste some raw job description text into the box first!');
+                return;
+            }
+
+            btnAiParse.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> AI Parsing Details...';
+
+            fetch('{{ url_for("admin.ai_parse_job") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ raw_text: rawText })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.company) document.querySelector('input[name="new_company_name"]').value = data.company;
+                if (data.title) document.querySelector('input[name="title"]').value = data.title;
+                if (data.qualification) document.querySelector('input[name="qualification"]').value = data.qualification;
+                if (data.experience) document.querySelector('input[name="experience"]').value = data.experience;
+                if (data.salary) document.querySelector('input[name="salary"]').value = data.salary;
+                if (data.location) document.querySelector('input[name="location"]').value = data.location;
+                if (data.work_mode) document.querySelector('select[name="work_mode"]').value = data.work_mode;
+                if (data.job_type) document.querySelector('select[name="job_type"]').value = data.job_type;
+                if (data.skills) document.querySelector('textarea[name="skills"]').value = data.skills;
+                if (data.application_url) document.querySelector('input[name="application_url"]').value = data.application_url;
+                if (data.description) document.querySelector('textarea[name="description"]').value = data.description;
+                if (data.responsibilities) document.querySelector('textarea[name="responsibilities"]').value = data.responsibilities;
+                if (data.eligibility) document.querySelector('textarea[name="eligibility"]').value = data.eligibility;
+
+                if (data.campus_analysis) document.querySelector('textarea[name="campus_analysis"]').value = data.campus_analysis;
+                if (data.who_can_apply) document.querySelector('textarea[name="who_can_apply"]').value = data.who_can_apply;
+                if (data.resume_tips) document.querySelector('textarea[name="resume_tips"]').value = data.resume_tips;
+                if (data.interview_tips) document.querySelector('textarea[name="interview_tips"]').value = data.interview_tips;
+
+                btnAiParse.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Entire Form Auto-Filled!';
+                setTimeout(() => {
+                    btnAiParse.innerHTML = '<i class="bi bi-magic me-1"></i> Auto-Fill Entire Form With AI';
+                }, 2500);
+            })
+            .catch(err => {
+                alert('Could not parse text. Please check your text.');
+                btnAiParse.innerHTML = '<i class="bi bi-magic me-1"></i> Auto-Fill Entire Form With AI';
+            });
+        });
+    }
+
+    const toggleVideo = document.getElementById('toggle-video-input');
+    const container = document.getElementById('video-fields-container');
+    
+    if (toggleVideo) {
+        toggleVideo.addEventListener('change', function() {
+            if (this.checked) {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+                const urlInput = document.querySelector('input[name="youtube_video_url"]');
+                const titleInput = document.querySelector('input[name="youtube_title"]');
+                if (urlInput) urlInput.value = '';
+                if (titleInput) titleInput.value = '';
+            }
+        });
+    }
+
+    const btnAuto = document.getElementById('btn-auto-generate');
+    if (btnAuto) {
+        btnAuto.addEventListener('click', function() {
+            const compSelect = document.querySelector('select[name="company_id"]');
+            const compTyped = document.querySelector('input[name="new_company_name"]').value;
+            let compName = compTyped;
+            if (!compName && compSelect && compSelect.selectedIndex > 0) {
+                compName = compSelect.options[compSelect.selectedIndex].text;
+            }
+
+            const title = document.querySelector('input[name="title"]').value;
+            const qualification = document.querySelector('input[name="qualification"]').value;
+            const experience = document.querySelector('input[name="experience"]').value;
+            const skills = document.querySelector('textarea[name="skills"]').value;
+            const eligibility = document.querySelector('textarea[name="eligibility"]').value;
+
+            btnAuto.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Generating...';
+
+            fetch('{{ url_for("admin.generate_analysis") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    company: compName,
+                    title: title,
+                    qualification: qualification,
+                    experience: experience,
+                    skills: skills,
+                    eligibility: eligibility
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.campus_analysis) document.querySelector('textarea[name="campus_analysis"]').value = data.campus_analysis;
+                if (data.who_can_apply) document.querySelector('textarea[name="who_can_apply"]').value = data.who_can_apply;
+                if (data.resume_tips) document.querySelector('textarea[name="resume_tips"]').value = data.resume_tips;
+                if (data.interview_tips) document.querySelector('textarea[name="interview_tips"]').value = data.interview_tips;
+
+                btnAuto.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Generated!';
+                setTimeout(() => {
+                    btnAuto.innerHTML = '<i class="bi bi-magic me-1"></i> Auto-Generate Guidance';
+                }, 2000);
+            })
+            .catch(err => {
+                btnAuto.innerHTML = '<i class="bi bi-magic me-1"></i> Auto-Generate Guidance';
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

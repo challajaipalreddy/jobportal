@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Daily Video Updates & YouTube Generator - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-youtube text-danger me-2"></i> Daily Job Video Update Creator</h3>
+        <p class="text-muted small mb-0">Group today's job postings into a YouTube video update page & copy description text.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Form Column -->
+    <div class="col-lg-6">
+        <div class="card border-danger bg-light shadow-sm rounded-4 p-4">
+            <h5 class="fw-bold text-danger mb-3">Group Jobs for Daily Video</h5>
+
+            <form action="{{ url_for('admin.daily_video') }}" method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Update Title</label>
+                    <input type="text" name="title" class="form-control" value="Today's Latest Jobs — {{ today_date }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Date</label>
+                    <input type="date" name="update_date" class="form-control" value="{{ today_date }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">YouTube Video URL</label>
+                    <input type="text" name="youtube_video_url" class="form-control" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Select Featured Jobs for Video</label>
+                    <div class="border rounded bg-white p-3" style="max-height: 250px; overflow-y: auto;">
+                        {% for j in active_jobs %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="selected_jobs" value="{{ j.id }}" id="job_chk_{{ j.id }}" checked>
+                            <label class="form-check-label small" for="job_chk_{{ j.id }}">
+                                <strong>{{ j.company.name }}</strong> — {{ j.title }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold">Generate Daily Job Video Page</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Description Generator Box -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+            <h5 class="fw-bold mb-3">Copy YouTube Description</h5>
+            
+            {% if recent_updates %}
+                {% set latest = recent_updates[0] %}
+                <p class="small text-muted mb-2">Generated description for <strong>{{ latest.title }}</strong>:</p>
+                <textarea id="yt-desc-text" class="form-control font-monospace small mb-3" rows="10" readonly>{{ latest.youtube_description }}</textarea>
+                <button onclick="copyToClipboard(document.getElementById('yt-desc-text').value)" class="btn btn-accent rounded-pill px-4">
+                    <i class="bi bi-clipboard me-1"></i> Copy YouTube Description
+                </button>
+            {% else %}
+                <p class="text-muted small">Create a Daily Job Video Update on the left to automatically generate copy-paste text for YouTube descriptions.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

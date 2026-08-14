@@ -1,0 +1,81 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Categories - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Manage Job Categories</h3>
+        <p class="text-muted small mb-0">Organize job postings into industry domains and technology tracks.</p>
+    </div>
+    <button class="btn btn-accent rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+        <i class="bi bi-plus-circle me-1"></i> + Add New Category
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 p-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle small mb-0">
+            <thead>
+                <tr>
+                    <th>Icon</th>
+                    <th>Category Name</th>
+                    <th>Slug</th>
+                    <th>Jobs Count</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td><i class="bi {{ cat.icon or 'bi-briefcase' }} fs-5 text-primary"></i></td>
+                    <td class="fw-semibold">{{ cat.name }}</td>
+                    <td><code>{{ cat.slug }}</code></td>
+                    <td><span class="badge bg-light text-dark border">{{ cat.jobs.count() }} Jobs</span></td>
+                    <td class="text-end">
+                        <form action="{{ url_for('admin.category_delete', id=cat.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this category?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill py-0 px-2">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center py-4 text-muted">No categories created yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Add Category -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-header-title fw-bold mb-0">Add New Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.category_create') }}" method="POST">
+                {{ form.hidden_tag() }}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label fw-semibold") }}
+                        {{ form.name(class="form-control", placeholder="e.g. Software Development") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.icon.label(class="form-label fw-semibold") }}
+                        {{ form.icon(class="form-control", placeholder="e.g. bi-code-slash") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label fw-semibold") }}
+                        {{ form.description(class="form-control", rows=2, placeholder="Short domain summary...") }}
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    {{ form.submit(class="btn btn-accent rounded-pill") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
