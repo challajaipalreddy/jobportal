@@ -4,13 +4,16 @@ from app import create_app, db
 from app.models import User, Company, Category, Job, DailyJobUpdate, CareerTip, Subscriber, ContactMessage, SiteSetting
 from app.utils import generate_unique_slug
 
-app = create_app('development')
+def seed_database(app_instance=None):
+    if app_instance is None:
+        from app import create_app
+        app_instance = create_app('development')
 
-def seed_database():
-    with app.app_context():
+    with app_instance.app_context():
+        from app.extensions import db
         print("Recreating database tables with updated schema...")
-        db.drop_all()
         db.create_all()
+
 
         # 1. Create Default Admin User
         admin_email = os.environ.get('ADMIN_EMAIL', 'admin@campustocareer.com')

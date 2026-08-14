@@ -119,7 +119,8 @@ with app.app_context():
         from app.models import Category, User
         if not Category.query.first():
             from seed import seed_database
-            seed_database()
+            seed_database(app)
+
 
         # Guarantee admin user 'admin' exists with password 'admin123'
         admin = User.query.filter_by(email='admin@campustocareer.com').first()
