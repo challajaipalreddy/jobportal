@@ -12,9 +12,13 @@ def login():
         
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.strip().lower()).first()
+        input_val = form.email.data.strip().lower()
+        user = User.query.filter(
+            (User.email.ilike(input_val)) | (User.username.ilike(input_val))
+        ).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
+
             flash('Logged in successfully.', 'success')
             next_page = request.args.get('next')
             if not next_page or not next_page.startswith('/'):

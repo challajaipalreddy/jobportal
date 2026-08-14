@@ -121,14 +121,24 @@ with app.app_context():
             from seed import seed_database
             seed_database()
 
-        # Guarantee admin user exists with password 'admin123'
+        # Guarantee admin user 'admin' exists with password 'admin123'
         admin = User.query.filter_by(email='admin@campustocareer.com').first()
         if not admin:
             admin = User(username='admin', email='admin@campustocareer.com', is_admin=True)
             db.session.add(admin)
         admin.set_password('admin123')
         admin.is_admin = True
+
+        # Guarantee admin user 'jaireddy' exists with password 'jaireddy@12'
+        jai = User.query.filter((User.username == 'jaireddy') | (User.email == 'jaireddy@campustocareer.com')).first()
+        if not jai:
+            jai = User(username='jaireddy', email='jaireddy@campustocareer.com', is_admin=True)
+            db.session.add(jai)
+        jai.set_password('jaireddy@12')
+        jai.is_admin = True
+        
         db.session.commit()
+
     except Exception as err:
         print("Auto DB initialization notice:", err)
 
