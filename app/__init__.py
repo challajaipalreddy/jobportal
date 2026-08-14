@@ -37,8 +37,13 @@ def create_app(config_name=None):
     # Global Jinja context processors & filters
     @app.context_processor
     def inject_global_data():
-        from app.models import Category
-        top_categories = Category.query.limit(6).all()
+        top_categories = []
+        try:
+            from app.models import Category
+            top_categories = Category.query.limit(6).all()
+        except Exception:
+            top_categories = []
+
         return dict(
             top_categories=top_categories,
             now=os.environ.get('CURRENT_TIME', '2026')
@@ -108,3 +113,12 @@ def create_app(config_name=None):
 # Expose 'app' instance at module level so 'gunicorn app:app' works on Render/production WSGI
 app = create_app(os.environ.get('FLASK_ENV', 'production'))
 
+with app.app_context():
+    try:
+        db.create_all()
+        from app.models import Category
+        if not Category.query.first():
+            from seed import seed_database
+            seed_database()
+    except Exception as err:
+        print("Auto DB initialization notice:", err)
