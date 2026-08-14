@@ -104,3 +104,7 @@ def create_app(config_name=None):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     return app
+
+# Expose 'app' instance at module level so 'gunicorn app:app' works on Render/production WSGI
+app = create_app(os.environ.get('FLASK_ENV', 'production'))
+
