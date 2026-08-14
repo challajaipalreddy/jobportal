@@ -116,9 +116,19 @@ app = create_app(os.environ.get('FLASK_ENV', 'production'))
 with app.app_context():
     try:
         db.create_all()
-        from app.models import Category
+        from app.models import Category, User
         if not Category.query.first():
             from seed import seed_database
             seed_database()
+
+        # Guarantee admin user exists with password 'admin123'
+        admin = User.query.filter_by(email='admin@campustocareer.com').first()
+        if not admin:
+            admin = User(username='admin', email='admin@campustocareer.com', is_admin=True)
+            db.session.add(admin)
+        admin.set_password('admin123')
+        admin.is_admin = True
+        db.session.commit()
     except Exception as err:
         print("Auto DB initialization notice:", err)
+
