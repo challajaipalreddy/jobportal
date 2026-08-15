@@ -10,3 +10,4 @@ cryptography==42.0.5
 openpyxl==3.1.2
 pytest==8.0.2
 gunicorn==21.2.0
+serverless-wsgi==3.0.2
