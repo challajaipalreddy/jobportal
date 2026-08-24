@@ -290,7 +290,16 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(res => res.json())
             .then(data => {
-                if (data.company) document.querySelector('input[name="new_company_name"]').value = data.company;
+                if (data.company_id && data.company_id > 0) {
+                    document.querySelector('select[name="company_id"]').value = data.company_id;
+                    document.querySelector('input[name="new_company_name"]').value = '';
+                } else if (data.company) {
+                    document.querySelector('input[name="new_company_name"]').value = data.company;
+                    document.querySelector('select[name="company_id"]').value = 0;
+                }
+                if (data.company_logo) document.querySelector('input[name="company_logo"]').value = data.company_logo;
+                if (data.category_id && data.category_id > 0) document.querySelector('select[name="category_id"]').value = data.category_id;
+                
                 if (data.title) document.querySelector('input[name="title"]').value = data.title;
                 if (data.qualification) document.querySelector('input[name="qualification"]').value = data.qualification;
                 if (data.experience) document.querySelector('input[name="experience"]').value = data.experience;
@@ -300,6 +309,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (data.job_type) document.querySelector('select[name="job_type"]').value = data.job_type;
                 if (data.skills) document.querySelector('textarea[name="skills"]').value = data.skills;
                 if (data.application_url) document.querySelector('input[name="application_url"]').value = data.application_url;
+                if (data.source_url) document.querySelector('input[name="source_url"]').value = data.source_url;
                 if (data.description) document.querySelector('textarea[name="description"]').value = data.description;
                 if (data.responsibilities) document.querySelector('textarea[name="responsibilities"]').value = data.responsibilities;
                 if (data.eligibility) document.querySelector('textarea[name="eligibility"]').value = data.eligibility;
@@ -314,6 +324,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     btnAiParse.innerHTML = '<i class="bi bi-magic me-1"></i> Auto-Fill Entire Form With AI';
                 }, 2500);
             })
+
             .catch(err => {
                 alert('Could not parse text. Please check your text.');
                 btnAiParse.innerHTML = '<i class="bi bi-magic me-1"></i> Auto-Fill Entire Form With AI';
