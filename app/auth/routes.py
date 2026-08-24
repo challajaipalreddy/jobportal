@@ -12,12 +12,13 @@ def login():
         
     form = LoginForm()
     if form.validate_on_submit():
-        input_val = form.email.data.strip().lower()
-        pwd = form.password.data.strip()
+        input_val = (form.email.data or '').strip().lower()
+        pwd = (form.password.data or '').strip()
 
         user = User.query.filter(
             (User.email.ilike(input_val)) | (User.username.ilike(input_val))
         ).first()
+
         
         # Fallback to any active admin if username matches admin alias
         if not user and input_val in ['admin', 'admin@campustocareer.com', 'jaireddy', 'jaireddy@campustocareer.com']:
