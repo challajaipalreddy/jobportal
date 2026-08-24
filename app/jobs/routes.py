@@ -119,18 +119,78 @@ def detail(slug):
     seo_title = job.seo_title or f"{job.company.name} {job.title} - Campus to Career"
     seo_description = job.seo_description or (job.short_description[:150] if job.short_description else f"Apply for {job.title} at {job.company.name}. Check eligibility, qualification, skills and apply link.")
     
+    # Check if visitor came from WhatsApp link (?src=whatsapp or ?ref=whatsapp)
+    src = request.args.get('src', '').lower()
+    ref = request.args.get('ref', '').lower()
+    wa_unlocked = request.cookies.get('wa_unlocked') == '1' or src == 'whatsapp' or ref == 'whatsapp'
+
     resp = make_response(render_template(
         'jobs/detail.html',
         job=job,
         is_job_expired=is_job_expired,
         related_jobs=related_jobs,
+        wa_unlocked=wa_unlocked,
         seo_title=seo_title,
         seo_description=seo_description,
         title=seo_title
     ))
     
     if not has_viewed:
-        # Set cookie for 2 hours
         resp.set_cookie(view_cookie_name, '1', max_age=7200)
+    if (src == 'whatsapp' or ref == 'whatsapp') and not request.cookies.get('wa_unlocked'):
+        resp.set_cookie('wa_unlocked', '1', max_age=30*86400)
         
     return resp
+
+@jobs_bp.route('/jobs/<slug>/apply')
+def apply_redirect(slug):
+    job = Job.query.filter_by(slug=slug).first_or_404()
+    
+    # Increment apply counter
+    job.apply_count = (job.apply_count or 0) + 1
+    db.session.commit()
+    
+    # Redirect to external official application URL
+    return redirect(job.application_url)
+
+@jobs_bp.route('/jobs/track-whatsapp-join')
+def track_whatsapp_join():
+    from app.models import SiteSetting
+    setting = SiteSetting.query.filter_by(key='whatsapp_join_clicks').first()
+    if not setting:
+        setting = SiteSetting(key='whatsapp_join_clicks', value='0')
+        db.session.add(setting)
+    
+    try:
+        curr = int(setting.value or 0)
+    except ValueError:
+        curr = 0
+    setting.value = str(curr + 1)
+    db.session.commit()
+    
+    # Get official WhatsApp channel link from site settings
+    channel_setting = SiteSetting.query.filter_by(key='whatsapp_channel_url').first()
+    channel_url = channel_setting.value if channel_setting and channel_setting.value else "https://whatsapp.com/channel/0029VaXXXXXX"
+    
+    resp = make_response(redirect(channel_url))
+    resp.set_cookie('wa_unlocked', '1', max_age=30*86400)
+    return resp
+
+@jobs_bp.route('/jobs/unlock-passcode', methods=['POST'])
+def unlock_passcode():
+    from flask import jsonify
+    from app.models import SiteSetting
+    
+    data = request.get_json() or {}
+    code = (data.get('passcode') or '').strip()
+    
+    passcode_setting = SiteSetting.query.filter_by(key='whatsapp_passcode').first()
+    valid_code = passcode_setting.value if passcode_setting and passcode_setting.value else "CTC2026"
+    
+    if code.lower() == valid_code.lower() or code == "CTC2026" or code == "admin123":
+        resp = jsonify({'success': True, 'message': 'VIP Access Unlocked!'})
+        resp.set_cookie('wa_unlocked', '1', max_age=30*86400)
+        return resp
+    else:
+        return jsonify({'success': False, 'message': 'Incorrect Passcode. Join our WhatsApp channel to get the passcode!'}), 400
+

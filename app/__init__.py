@@ -116,10 +116,26 @@ app = create_app(os.environ.get('FLASK_ENV', 'production'))
 with app.app_context():
     try:
         db.create_all()
+
+        # Non-destructive SQLite column migration for existing databases
+        from sqlalchemy import text
+        try:
+            db.session.execute(text("ALTER TABLE jobs ADD COLUMN apply_count INTEGER DEFAULT 0"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        try:
+            db.session.execute(text("ALTER TABLE jobs ADD COLUMN requires_whatsapp_gate BOOLEAN DEFAULT 0"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
         from app.models import Category, User
         if not Category.query.first():
             from seed import seed_database
             seed_database(app)
+
 
 
         # Guarantee admin user 'admin' exists with password 'admin123'

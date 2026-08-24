@@ -113,10 +113,12 @@
                         <td>{{ job.views }}</td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
+                                <button type="button" onclick="copyWaPost({{ job.id }})" class="btn btn-outline-success" title="Copy WhatsApp Broadcast Post"><i class="bi bi-whatsapp"></i></button>
                                 <a href="{{ url_for('admin.job_edit', id=job.id) }}" class="btn btn-outline-primary" title="Edit Job"><i class="bi bi-pencil"></i></a>
                                 <button type="button" onclick="confirmFormSubmit(event, 'Duplicate job posting as draft?')" form="dup-form-{{ job.id }}" class="btn btn-outline-secondary" title="Duplicate"><i class="bi bi-copy"></i></button>
                                 <button type="button" onclick="confirmFormSubmit(event, 'Delete job posting permanently?')" form="del-form-{{ job.id }}" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
                             </div>
+
 
                             <!-- Hidden forms for action buttons -->
                             <form id="dup-form-{{ job.id }}" action="{{ url_for('admin.job_duplicate', id=job.id) }}" method="POST" class="d-none"></form>
@@ -176,4 +178,19 @@
         {% endif %}
     </div>
 </form>
+<script>
+function copyWaPost(jobId) {
+    fetch('/admin/job/' + jobId + '/whatsapp-post')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.post_text) {
+                navigator.clipboard.writeText(data.post_text).then(() => {
+                    alert('✅ WhatsApp Post copied to clipboard! Ready to paste into your WhatsApp Channel.');
+                });
+            }
+        })
+        .catch(err => alert('Failed to generate WhatsApp post text.'));
+}
+</script>
 {% endblock %}
+
