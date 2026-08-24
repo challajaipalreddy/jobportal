@@ -318,11 +318,6 @@ def dashboard():
     
     total_companies = Company.query.count()
     total_views = db.session.query(db.func.sum(Job.views)).scalar() or 0
-    total_applies = db.session.query(db.func.sum(Job.apply_count)).scalar() or 0
-    
-    wa_clicks_setting = SiteSetting.query.filter_by(key='whatsapp_join_clicks').first()
-    wa_clicks = int(wa_clicks_setting.value) if wa_clicks_setting and wa_clicks_setting.value else 0
-
     jobs_today = Job.query.filter(Job.posted_date >= today_start).count()
     
     expiring_soon_jobs = Job.query.filter(
@@ -332,8 +327,6 @@ def dashboard():
         Job.application_deadline <= three_days_from_now
     ).order_by(Job.application_deadline.asc()).all()
     
-    top_applied_jobs = Job.query.filter(Job.apply_count > 0).order_by(Job.apply_count.desc()).limit(5).all()
-
     youtube_jobs_count = Job.query.filter(
         Job.youtube_video_id.isnot(None), 
         Job.youtube_video_id != ''
@@ -350,9 +343,6 @@ def dashboard():
                            draft_jobs=draft_jobs,
                            total_companies=total_companies,
                            total_views=total_views,
-                           total_applies=total_applies,
-                           wa_clicks=wa_clicks,
-                           top_applied_jobs=top_applied_jobs,
                            jobs_today=jobs_today,
                            expiring_soon_jobs=expiring_soon_jobs,
                            youtube_jobs_count=youtube_jobs_count,
@@ -360,29 +350,6 @@ def dashboard():
                            recent_messages=recent_messages,
                            total_subscribers=total_subscribers,
                            title="Admin Dashboard - Campus to Career")
-
-@admin_bp.route('/job/<int:id>/whatsapp-post')
-def get_whatsapp_post(id):
-    job = Job.query.get_or_404(id)
-    host_url = request.host_url.rstrip('/')
-    job_url = f"{host_url}/jobs/{job.slug}?src=whatsapp"
-    
-    msg = f"""🚨 *NEW OFF-CAMPUS HIRING DRIVE ALERT!* 🚀
-
-🏢 *Company*: {job.company.name}
-💼 *Role*: {job.title}
-🎓 *Qualification*: {job.qualification or 'B.Tech / B.E / MCA / B.Sc'}
-💼 *Experience*: {job.experience or '0–2 Years (Freshers)'}
-💰 *Salary*: {job.salary or 'As Per Standard'}
-📍 *Location*: {job.location or 'Across India'}
-
-🔗 *Direct Official Apply Link*:
-{job_url}
-
-Join our WhatsApp Channel for daily hiring alerts & interview papers!"""
-
-    return jsonify({'success': True, 'post_text': msg})
-
 
 # --- JOBS MANAGEMENT ---
 
@@ -1073,22 +1040,6 @@ def settings():
         else:
             upi_setting.value = upi_id
 
-        wa_passcode = request.form.get('whatsapp_passcode', 'CTC2026').strip()
-        wa_pass_setting = SiteSetting.query.filter_by(key='whatsapp_passcode').first()
-        if not wa_pass_setting:
-            wa_pass_setting = SiteSetting(key='whatsapp_passcode', value=wa_passcode)
-            db.session.add(wa_pass_setting)
-        else:
-            wa_pass_setting.value = wa_passcode
-
-        wa_url = request.form.get('whatsapp_channel_url', 'https://whatsapp.com/channel/0029VaXXXXXX').strip()
-        wa_url_setting = SiteSetting.query.filter_by(key='whatsapp_channel_url').first()
-        if not wa_url_setting:
-            wa_url_setting = SiteSetting(key='whatsapp_channel_url', value=wa_url)
-            db.session.add(wa_url_setting)
-        else:
-            wa_url_setting.value = wa_url
-
         db.session.commit()
         flash('Website settings saved!', 'success')
         return redirect(url_for('admin.settings'))
@@ -1096,17 +1047,12 @@ def settings():
     announcement_setting = SiteSetting.query.filter_by(key='announcement_banner').first()
     price_setting = SiteSetting.query.filter_by(key='study_pass_price').first()
     upi_setting = SiteSetting.query.filter_by(key='upi_id').first()
-    wa_pass_setting = SiteSetting.query.filter_by(key='whatsapp_passcode').first()
-    wa_url_setting = SiteSetting.query.filter_by(key='whatsapp_channel_url').first()
 
     return render_template('admin/settings.html', 
                            announcement=announcement_setting.value if announcement_setting else '',
                            pass_price=price_setting.value if price_setting else '99',
                            upi_id=upi_setting.value if upi_setting else 'campustocareer@upi',
-                           wa_passcode=wa_pass_setting.value if wa_pass_setting else 'CTC2026',
-                           wa_channel_url=wa_url_setting.value if wa_url_setting else 'https://whatsapp.com/channel/0029VaXXXXXX',
                            title='Website Settings - Admin')
-
 
 # --- PAYMENT SUBMISSIONS ---
 

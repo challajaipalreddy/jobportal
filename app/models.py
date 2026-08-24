@@ -107,9 +107,6 @@ class Job(db.Model):
     status = db.Column(db.String(20), default='Active', index=True)
     featured = db.Column(db.Boolean, default=False, index=True)
     views = db.Column(db.Integer, default=0)
-    apply_count = db.Column(db.Integer, default=0)
-    requires_whatsapp_gate = db.Column(db.Boolean, default=False)
-
     
     youtube_video_url = db.Column(db.String(255), nullable=True)
     youtube_video_id = db.Column(db.String(50), nullable=True)

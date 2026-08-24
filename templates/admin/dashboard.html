@@ -16,38 +16,37 @@
 <!-- Stats Row -->
 <div class="row g-3 mb-4">
     <div class="col-xl-3 col-md-6">
-        <div class="stat-card" style="border-left: 4px solid #25D366 !important;">
-            <span class="text-muted small fw-semibold">TOTAL JOB APPLIES</span>
-            <div class="stat-number text-success mt-1">{{ total_applies or 0 }}</div>
-            <span class="text-success small fw-semibold"><i class="bi bi-cursor-fill me-1"></i> Official Apply Clicks</span>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6">
-        <div class="stat-card" style="border-left: 4px solid #128C7E !important;">
-            <span class="text-muted small fw-semibold">WHATSAPP CHANNEL JOINS</span>
-            <div class="stat-number text-primary mt-1">{{ wa_clicks or 0 }}</div>
-            <span class="text-primary small fw-semibold"><i class="bi bi-whatsapp me-1"></i> Channel Join Clicks</span>
+        <div class="stat-card">
+            <span class="text-muted small fw-semibold">TOTAL JOBS</span>
+            <div class="stat-number mt-1">{{ total_jobs }}</div>
+            <span class="text-success small fw-semibold"><i class="bi bi-calendar-check me-1"></i> {{ jobs_today }} Published Today</span>
         </div>
     </div>
 
     <div class="col-xl-3 col-md-6">
         <div class="stat-card">
-            <span class="text-muted small fw-semibold">TOTAL VIEWS</span>
-            <div class="stat-number text-dark mt-1">{{ total_views or 0 }}</div>
-            <span class="text-muted small"><i class="bi bi-briefcase me-1"></i> {{ active_jobs }} Active Jobs</span>
+            <span class="text-muted small fw-semibold">ACTIVE JOBS</span>
+            <div class="stat-number text-success mt-1">{{ active_jobs }}</div>
+            <span class="text-muted small"><i class="bi bi-eye me-1"></i> {{ total_views }} Total Views</span>
         </div>
     </div>
 
     <div class="col-xl-3 col-md-6">
         <div class="stat-card">
-            <span class="text-muted small fw-semibold">SUBSCRIBERS</span>
-            <div class="stat-number text-warning mt-1">{{ total_subscribers }}</div>
-            <span class="text-muted small"><i class="bi bi-youtube me-1"></i> {{ youtube_jobs_count }} YouTube Linked</span>
+            <span class="text-muted small fw-semibold">EXPIRED JOBS</span>
+            <div class="stat-number text-danger mt-1">{{ expired_jobs }}</div>
+            <span class="text-muted small"><i class="bi bi-file-earmark me-1"></i> {{ draft_jobs }} Drafts</span>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <span class="text-muted small fw-semibold">YOUTUBE LINKED</span>
+            <div class="stat-number text-primary mt-1">{{ youtube_jobs_count }}</div>
+            <span class="text-muted small"><i class="bi bi-envelope me-1"></i> {{ total_subscribers }} Subscribers</span>
         </div>
     </div>
 </div>
-
 
 <!-- Jobs Expiring Soon Section -->
 {% if expiring_soon_jobs %}

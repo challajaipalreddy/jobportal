@@ -6,32 +6,17 @@
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
         <h3 class="fw-bold mb-1"><i class="bi bi-gear me-2"></i> Website Settings</h3>
-        <p class="text-muted small mb-0">Configure global website announcements, WhatsApp channel links, and VIP passcodes.</p>
+        <p class="text-muted small mb-0">Configure global website announcement banners and parameters.</p>
     </div>
 </div>
 
-<div class="card border-0 shadow-sm rounded-4 p-4" style="max-width: 650px;">
+<div class="card border-0 shadow-sm rounded-4 p-4 max-w-600">
     <form action="{{ url_for('admin.settings') }}" method="POST">
         <div class="mb-4">
-            <label class="form-label fw-semibold"><i class="bi bi-megaphone text-primary me-1"></i> Top Announcement Banner</label>
+            <label class="form-label fw-semibold">Top Announcement Banner</label>
             <input type="text" name="announcement_banner" value="{{ announcement }}" class="form-control" placeholder="e.g. 🔥 2026 Off-Campus Placement Drives Active Now!">
         </div>
-
-        <hr class="my-4">
-
-        <div class="mb-3">
-            <label class="form-label fw-semibold text-success"><i class="bi bi-whatsapp me-1"></i> Official WhatsApp Channel Link</label>
-            <input type="url" name="whatsapp_channel_url" value="{{ wa_channel_url }}" class="form-control" placeholder="https://whatsapp.com/channel/0029VaXXXXXX">
-            <div class="form-text extra-small">Visitors who click 'Join WhatsApp Channel' will be redirected to this link.</div>
-        </div>
-
-        <div class="mb-4">
-            <label class="form-label fw-semibold text-success"><i class="bi bi-key-fill me-1"></i> WhatsApp VIP Passcode</label>
-            <input type="text" name="whatsapp_passcode" value="{{ wa_passcode }}" class="form-control fw-bold" placeholder="e.g. CTC2026">
-            <div class="form-text extra-small">Passcode entered by visitors to unlock protected job apply links (Default: CTC2026).</div>
-        </div>
-
-        <button type="submit" class="btn btn-accent rounded-pill px-4 fw-bold">Save Settings</button>
+        <button type="submit" class="btn btn-accent rounded-pill px-4">Save Settings</button>
     </form>
 </div>
 {% endblock %}
