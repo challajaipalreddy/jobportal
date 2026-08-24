@@ -13,65 +13,6 @@
     </a>
 </div>
 
-<!-- Server Health & Keep-Alive Control Card -->
-<div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <div class="d-flex align-items-center gap-3">
-            <div class="p-3 bg-success bg-opacity-10 text-success rounded-circle">
-                <i class="bi bi-hdd-network-fill fs-3"></i>
-            </div>
-            <div>
-                <h6 class="fw-bold mb-1 d-flex align-items-center gap-2">
-                    Server Status & Keep-Alive Manager 
-                    <span class="badge bg-success" id="serverPingBadge"><i class="bi bi-broadcast me-1"></i> Active 🟢</span>
-                </h6>
-                <p class="text-muted small mb-0">Prevent server down/sleep issues on Render/free hosting by keeping your app active 24/7.</p>
-            </div>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-outline-success rounded-pill px-3 py-2 fw-semibold" id="btnPingServer" onclick="pingServerNow()">
-                <i class="bi bi-lightning-charge-fill me-1"></i> Ping Server Now
-            </button>
-            <a href="{{ url_for('api.health_check') }}" target="_blank" class="btn btn-light rounded-pill px-3 py-2 text-muted fw-semibold border">
-                <i class="bi bi-box-arrow-up-right me-1"></i> Uptime URL
-            </a>
-        </div>
-    </div>
-    <div class="mt-2 text-muted extra-small d-none" id="pingStatusDetails"></div>
-</div>
-
-<script>
-function pingServerNow() {
-    const btn = document.getElementById('btnPingServer');
-    const badge = document.getElementById('serverPingBadge');
-    const details = document.getElementById('pingStatusDetails');
-    
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Pinging...';
-    
-    fetch('{{ url_for("admin.admin_ping_server") }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(res => res.json())
-    .then(data => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-lightning-charge-fill me-1"></i> Ping Server Now';
-        badge.className = 'badge bg-success';
-        badge.innerHTML = '<i class="bi bi-broadcast me-1"></i> Active 🟢 (' + data.response_time + ')';
-        details.classList.remove('d-none');
-        details.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> ' + data.message + ' | Time: ' + data.timestamp + '</span>';
-    })
-    .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i> Retry Ping';
-        badge.className = 'badge bg-danger';
-        badge.innerHTML = 'Ping Failed';
-    });
-}
-</script>
-
-
 <!-- Stats Row -->
 <div class="row g-3 mb-4">
     <div class="col-xl-3 col-md-6">
