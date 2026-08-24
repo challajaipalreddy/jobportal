@@ -8,7 +8,11 @@ from app.forms import ContactForm, SubscriberForm
 
 main_bp = Blueprint('main', __name__)
 
-NOTES_DIR = r"C:\Users\hp\Desktop\Notes"
+# Dynamic NOTES_DIR resolution: static/notes inside repository first, fallback to local C:\Users\hp\Desktop\Notes
+LOCAL_NOTES = r"C:\Users\hp\Desktop\Notes"
+REPO_NOTES = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'static', 'notes')
+NOTES_DIR = REPO_NOTES if os.path.exists(REPO_NOTES) else LOCAL_NOTES
+
 
 @main_bp.route('/')
 def home():
@@ -168,17 +172,17 @@ def download_note(filename):
         full_path = os.path.join(current_app.root_path, '..', mat.file_path)
         if not os.path.exists(full_path):
             abort(404)
-        return send_from_directory(os.path.dirname(full_path), os.path.basename(full_path), as_attachment=False)
+        return send_from_directory(os.path.dirname(full_path), os.path.basename(full_path), as_attachment=False, mimetype='application/pdf')
 
-    if not os.path.exists(NOTES_DIR):
-        abort(404)
-    file_path = os.path.join(NOTES_DIR, filename)
+    target_dir = REPO_NOTES if os.path.exists(REPO_NOTES) else LOCAL_NOTES
+    file_path = os.path.join(target_dir, filename)
     if not os.path.isfile(file_path):
         abort(404)
 
     directory = os.path.dirname(file_path)
     base_name = os.path.basename(file_path)
-    return send_from_directory(directory, base_name, as_attachment=False)
+    return send_from_directory(directory, base_name, as_attachment=False, mimetype='application/pdf')
+
 
 @main_bp.route('/subscribe', methods=['POST'])
 def subscribe():
