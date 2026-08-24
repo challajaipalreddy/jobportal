@@ -1119,4 +1119,18 @@ def ai_autopilot():
                            logs=None,
                            title='AI Autopilot Job Finder - Admin')
 
+@admin_bp.route('/api/ping', methods=['POST', 'GET'])
+def admin_ping_server():
+    import time
+    start_time = time.time()
+    now_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
+    elapsed_ms = round((time.time() - start_time) * 1000, 2)
+    return jsonify({
+        'status': 'online',
+        'message': 'Keep-alive ping sent successfully! Server is active & awake.',
+        'timestamp': now_str,
+        'response_time': f"{elapsed_ms}ms"
+    }), 200
+
+
 

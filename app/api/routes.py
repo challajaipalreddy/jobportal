@@ -96,3 +96,14 @@ def get_companies():
     companies = Company.query.all()
     data = [{'id': c.id, 'name': c.name, 'slug': c.slug, 'logo': c.logo, 'website': c.website} for c in companies]
     return jsonify({'success': True, 'companies': data})
+
+@api_bp.route('/health')
+def health_check():
+    from datetime import datetime
+    return jsonify({
+        'status': 'online',
+        'service': 'Campus to Career Hub',
+        'timestamp': datetime.utcnow().isoformat(),
+        'uptime_status': 'active'
+    }), 200
+
