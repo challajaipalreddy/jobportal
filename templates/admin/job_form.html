@@ -33,7 +33,12 @@
 <div class="card border-primary bg-light shadow-sm rounded-4 p-4 mb-4">
     <div class="d-flex align-items-center justify-content-between mb-2">
         <h5 class="fw-bold text-primary mb-0"><i class="bi bi-robot me-2"></i> AI Auto-Fill Assistant</h5>
-        <span class="badge bg-primary">Paste Raw Post</span>
+        <div>
+            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill me-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#aiPromptModal">
+                <i class="bi bi-file-earmark-code me-1"></i> Copy Master System Prompt
+            </button>
+            <span class="badge bg-primary">Paste Raw Post</span>
+        </div>
     </div>
     <p class="text-muted small mb-3">Paste raw job description / notification text below, and AI will automatically parse and fill company name, title, qualifications, skills, salary, eligibility, responsibilities, and guidance for you!</p>
     
@@ -46,6 +51,132 @@
         </button>
     </div>
 </div>
+
+<!-- Modal: Master AI System Prompt -->
+<div class="modal fade" id="aiPromptModal" tabindex="-1" aria-labelledby="aiPromptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-primary text-white rounded-top-4">
+                <h5 class="modal-title fw-bold" id="aiPromptModalLabel"><i class="bi bi-robot me-2"></i> AI Job Posting Auto-Fill Assistant System Prompt</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-light p-4">
+                <p class="text-muted small">You can copy this system prompt into ChatGPT, Gemini, Claude, or DeepSeek to parse raw recruitment notifications into exact job portal fields.</p>
+                <div class="d-flex justify-content-end mb-2">
+                    <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold" id="btn-copy-prompt">
+                        <i class="bi bi-clipboard me-1"></i> Copy Prompt to Clipboard
+                    </button>
+                </div>
+                <textarea id="system-prompt-text" class="form-control font-monospace small bg-white text-dark" rows="16" readonly># AI Job Posting Auto-Fill Assistant
+
+You are an AI assistant responsible for converting raw job postings, recruitment notifications, career-page content, and hiring messages into a structured Job Posting form.
+
+The user will paste raw text. Your job is to analyze the entire text, extract relevant information, summarize where appropriate, normalize the data, and fill the exact fields defined below.
+
+Your output must be suitable for directly saving into a job-posting database/CMS.
+
+---
+
+# 1. Available Form Fields
+
+## Basic Information
+* Select Existing Company
+* Or Type New Company Name
+* Company Logo URL
+* Category (Cloud, Cyber Security, Data Analytics, Data Science, DevOps, Government Jobs, Internships, Software Development, Testing, UI/UX)
+* Job Title
+* Job Type (Full-Time, Internship, Part-Time, Contract, Walk-in Drive)
+* Work Mode (On-site, Remote, Hybrid)
+* Location
+
+## Eligibility & Qualifications
+* Educational Qualification
+* Experience Required
+* Key Skills
+* Eligibility Criteria
+
+## Job Overview & Details
+* Full Job Description
+* Key Responsibilities
+* Salary / CTC
+
+## Campus to Career Analysis
+* Campus to Career Analysis (Why consider this job?)
+* Who Can Apply?
+* Resume Preparation Tips
+* Interview Preparation Guidance
+
+## Application & Source URLs
+* Official Application URL
+* Source / Official Listing URL
+* Application Deadline
+
+---
+
+# 2. Main Objective
+When the user pastes a raw job posting:
+1. Understand the entire posting.
+2. Extract all available information.
+3. Map the information to the correct fields.
+4. Summarize long sections instead of blindly copying them.
+5. Generate useful Campus to Career guidance based ONLY on the job information.
+6. Normalize values so they are consistent.
+7. Detect missing required information.
+8. Never invent factual job details.
+
+---
+
+# 3. Final Output Format
+Return a structured result:
+
+### Job Posting Preview
+
+**Basic Information**
+* Select Existing Company: ...
+* Or Type New Company Name: ...
+* Company Logo URL: ...
+* Category: ...
+* Job Title: ...
+* Job Type: ...
+* Work Mode: ...
+* Location: ...
+
+**Eligibility & Qualifications**
+* Educational Qualification:
+  * ...
+* Experience Required: ...
+* Key Skills: ...
+* Eligibility Criteria:
+  * ...
+
+**Job Overview & Details**
+* Full Job Description:
+  * ...
+* Key Responsibilities:
+  * ...
+* Salary / CTC: ...
+
+**Campus to Career Analysis**
+* Campus to Career Analysis:
+  * ...
+* Who Can Apply?: ...
+* Resume Preparation Tips:
+  * ...
+* Interview Preparation Guidance:
+  * ...
+
+**Application & Source URLs**
+* Official Application URL: ...
+* Source / Official Listing URL: ...
+* Application Deadline: ...</textarea>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <form action="" method="POST">
     {{ form.hidden_tag() }}
@@ -272,7 +403,24 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    const btnCopyPrompt = document.getElementById('btn-copy-prompt');
+    if (btnCopyPrompt) {
+        btnCopyPrompt.addEventListener('click', function() {
+            const promptText = document.getElementById('system-prompt-text');
+            promptText.select();
+            navigator.clipboard.writeText(promptText.value).then(() => {
+                btnCopyPrompt.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Copied to Clipboard!';
+                btnCopyPrompt.classList.replace('btn-success', 'btn-dark');
+                setTimeout(() => {
+                    btnCopyPrompt.innerHTML = '<i class="bi bi-clipboard me-1"></i> Copy Prompt to Clipboard';
+                    btnCopyPrompt.classList.replace('btn-dark', 'btn-success');
+                }, 2500);
+            });
+        });
+    }
+
     const btnAiParse = document.getElementById('btn-ai-parse');
+
     if (btnAiParse) {
         btnAiParse.addEventListener('click', function() {
             const rawText = document.getElementById('ai-raw-text').value;
@@ -290,6 +438,7 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(res => res.json())
             .then(data => {
+                if (data.category_id) document.querySelector('select[name="category_id"]').value = data.category_id;
                 if (data.company) document.querySelector('input[name="new_company_name"]').value = data.company;
                 if (data.title) document.querySelector('input[name="title"]').value = data.title;
                 if (data.qualification) document.querySelector('input[name="qualification"]').value = data.qualification;
@@ -300,9 +449,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (data.job_type) document.querySelector('select[name="job_type"]').value = data.job_type;
                 if (data.skills) document.querySelector('textarea[name="skills"]').value = data.skills;
                 if (data.application_url) document.querySelector('input[name="application_url"]').value = data.application_url;
+                if (data.application_deadline) document.querySelector('input[name="application_deadline"]').value = data.application_deadline;
                 if (data.description) document.querySelector('textarea[name="description"]').value = data.description;
                 if (data.responsibilities) document.querySelector('textarea[name="responsibilities"]').value = data.responsibilities;
                 if (data.eligibility) document.querySelector('textarea[name="eligibility"]').value = data.eligibility;
+
 
                 if (data.campus_analysis) document.querySelector('textarea[name="campus_analysis"]').value = data.campus_analysis;
                 if (data.who_can_apply) document.querySelector('textarea[name="who_can_apply"]').value = data.who_can_apply;

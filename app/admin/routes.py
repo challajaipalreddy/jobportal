@@ -125,16 +125,32 @@ def ai_parse_job():
 
     lines = [l.strip() for l in raw_text.split('\n') if l.strip()]
 
+    # 1. Company Extraction & Normalization
     company = ""
     comp_match = re.search(r'(?:Company|Organization|Hiring Company|Employer)\s*:\s*([^\n\r]+)', raw_text, re.I)
     if comp_match:
         company = comp_match.group(1).strip()
     else:
         for l in lines[:5]:
-            if any(known in l.lower() for known in ['tcs', 'infosys', 'accenture', 'wipro', 'deloitte', 'google', 'amazon', 'microsoft', 'capgemini', 'cognizant', 'hcl']):
+            if any(known in l.lower() for known in ['tcs', 'tata consultancy', 'infosys', 'accenture', 'wipro', 'deloitte', 'google', 'amazon', 'microsoft', 'capgemini', 'cognizant', 'hcl']):
                 company = l
                 break
 
+    # Normalize common companies
+    if company:
+        c_lower = company.lower()
+        if 'tcs' in c_lower or 'tata consultancy' in c_lower:
+            company = 'TCS (Tata Consultancy Services)'
+        elif 'infosys' in c_lower:
+            company = 'Infosys'
+        elif 'accenture' in c_lower:
+            company = 'Accenture'
+        elif 'wipro' in c_lower:
+            company = 'Wipro'
+        elif 'deloitte' in c_lower:
+            company = 'Deloitte'
+
+    # 2. Job Title Extraction
     title = ""
     title_match = re.search(r'(?:Role|Position|Job Title|Designation|Post)\s*:\s*([^\n\r]+)', raw_text, re.I)
     if title_match:
@@ -142,40 +158,91 @@ def ai_parse_job():
     elif len(lines) > 0:
         title = lines[0]
 
-    experience = ""
+    # Clean marketing fluff from title
+    title = re.sub(r'^(?:Accenture|TCS|Infosys|Wipro|Deloitte|Google|Amazon)\s+(?:is\s+)?(?:hiring|inviting|looking for)\s+', '', title, flags=re.I).strip()
+
+    # 3. Category Detection
+    category_id = None
+    category_name = "Software Development"
+    text_lower = raw_text.lower()
+    
+    if 'intern' in text_lower or 'internship' in text_lower:
+        category_name = "Internships"
+    elif 'gov' in text_lower or 'public sector' in text_lower or 'recruitment notification' in text_lower:
+        category_name = "Government Jobs"
+    elif 'data scientist' in text_lower or 'machine learning' in text_lower or 'data science' in text_lower:
+        category_name = "Data Science"
+    elif 'data analyst' in text_lower or 'analytics' in text_lower or 'power bi' in text_lower or 'tableau' in text_lower:
+        category_name = "Data Analytics"
+    elif 'devops' in text_lower or 'ci/cd' in text_lower or 'kubernetes' in text_lower or 'docker' in text_lower:
+        category_name = "DevOps"
+    elif 'cloud' in text_lower or 'aws' in text_lower or 'azure' in text_lower or 'gcp' in text_lower:
+        category_name = "Cloud"
+    elif 'security' in text_lower or 'cyber' in text_lower or 'soc analyst' in text_lower or 'penetration' in text_lower:
+        category_name = "Cyber Security"
+    elif 'qa' in text_lower or 'testing' in text_lower or 'test engineer' in text_lower or 'selenium' in text_lower:
+        category_name = "Testing"
+    elif 'ui/ux' in text_lower or 'ui designer' in text_lower or 'figma' in text_lower or 'user experience' in text_lower:
+        category_name = "UI/UX"
+
+    cat_obj = Category.query.filter(Category.name.ilike(category_name)).first()
+    if cat_obj:
+        category_id = cat_obj.id
+
+    # 4. Job Type & Work Mode
+    job_type = "Full-Time"
+    if 'intern' in text_lower or 'internship' in text_lower:
+        job_type = "Internship"
+    elif 'walk-in' in text_lower or 'walk in' in text_lower:
+        job_type = "Walk-in Drive"
+    elif 'part-time' in text_lower:
+        job_type = "Part-Time"
+    elif 'contract' in text_lower:
+        job_type = "Contract"
+
+    work_mode = "On-site"
+    if 'remote' in text_lower or 'work from home' in text_lower or 'wfh' in text_lower:
+        work_mode = "Remote"
+    elif 'hybrid' in text_lower:
+        work_mode = "Hybrid"
+
+    # 5. Location Extraction & Normalization
+    location = "Across India"
+    loc_match = re.search(r'(?:Location|Job Location|Work Location|Locations)\s*:\s*([^\n\r]+)', raw_text, re.I)
+    if loc_match:
+        loc_raw = loc_match.group(1).strip()
+        location = loc_raw.replace('Bangalore', 'Bengaluru')
+    elif work_mode == "Remote":
+        location = "Remote"
+
+    # 6. Experience Extraction
+    experience = "0–2 Years"
     exp_match = re.search(r'(?:Experience|Exp Required|Experience Level|Exp)\s*:\s*([^\n\r]+)', raw_text, re.I)
     if exp_match:
-        exp_raw = exp_match.group(1).strip()
-        if re.search(r'\b0\b|fresher', exp_raw, re.I) and 'fresher' not in exp_raw.lower():
-            experience = f"{exp_raw} (Freshers Allowed)"
-        else:
-            experience = exp_raw
-    else:
-        num_exp = re.search(r'(\d+\s*(?:–|-|to)\s*\d+\s*(?:Years?|Yrs?))|(\d+\+?\s*(?:Years?|Yrs?))', raw_text, re.I)
-        if num_exp:
-            exp_found = num_exp.group(0).strip()
-            if re.search(r'\b0\b|fresher', exp_found, re.I) and 'fresher' not in exp_found.lower():
-                experience = f"{exp_found} (Freshers Allowed)"
-            else:
-                experience = exp_found
-        elif 'fresher' in raw_text.lower():
-            experience = "0–2 Years (Freshers Allowed)"
-        else:
-            experience = "0–2 Years"
+        experience = exp_match.group(1).strip()
+    elif 'fresher' in text_lower or '2024' in text_lower or '2025' in text_lower or '2026' in text_lower:
+        experience = "Freshers"
 
-    qualification = "B.Tech / B.E / BCA / MCA / B.Sc"
-    qual_match = re.search(r'(?:Qualification|Education|Degree|Eligibility Degree)\s*:\s*([^\n\r]+)', raw_text, re.I)
-    if qual_match:
-        qualification = qual_match.group(1).strip()
+    # 7. Qualification Bullet Points
+    qual_list = []
+    for q in ['B.Tech', 'B.E', 'M.Tech', 'MCA', 'BCA', 'B.Sc', 'M.Sc', 'MBA']:
+        if q.lower() in text_lower:
+            qual_list.append(q)
+    
+    if qual_list:
+        qualification = " / ".join(qual_list)
     else:
-        found_quals = []
-        for q in ['B.Tech', 'B.E', 'M.Tech', 'MCA', 'BCA', 'B.Sc', 'M.Sc', 'MBA']:
-            if q.lower() in raw_text.lower():
-                found_quals.append(q)
-        if found_quals:
-            qualification = " / ".join(found_quals)
+        qualification = "Bachelor's degree in Computer Science, IT, or related technical discipline"
 
-    salary = "As Per Industry Standard"
+    # 8. Key Skills
+    found_skills = []
+    for s in ['Python', 'Java', 'C++', 'SQL', 'Excel', 'JavaScript', 'HTML/CSS', 'Data Structures', 'AWS', 'Power BI', 'React', 'Problem Solving', 'Git', 'Docker']:
+        if s.lower() in text_lower:
+            found_skills.append(s)
+    skills = ", ".join(found_skills) if found_skills else "Java, Python, SQL, Problem Solving"
+
+    # 9. Salary / CTC
+    salary = "Not disclosed"
     sal_match = re.search(r'(?:Salary|CTC|Stipend|Package|Pay)\s*:\s*([^\n\r]+)', raw_text, re.I)
     if sal_match:
         salary = sal_match.group(1).strip()
@@ -184,56 +251,58 @@ def ai_parse_job():
         if lpa_match:
             salary = lpa_match.group(1).strip()
 
-    location = "Across India"
-    loc_match = re.search(r'(?:Location|Job Location|Work Location)\s*:\s*([^\n\r]+)', raw_text, re.I)
-    if loc_match:
-        location = loc_match.group(1).strip()
+    # 10. Eligibility Criteria Bullet Points
+    eligibility_bullets = [
+        f"• {qualification} from a recognized university",
+        "• Graduates from 2024–2026 batches",
+        "• Minimum 60% aggregate or 6.0 CGPA throughout academics",
+        "• No active backlogs at the time of joining",
+        f"• Strong programming and analytical skills in {skills}"
+    ]
+    eligibility = "\n".join(eligibility_bullets)
 
-    work_mode = "On-site"
-    if 'remote' in raw_text.lower() or 'work from home' in raw_text.lower():
-        work_mode = "Remote"
-    elif 'hybrid' in raw_text.lower():
-        work_mode = "Hybrid"
+    # 11. Full Job Description & Responsibilities
+    description_bullets = [
+        f"• Work on software development and technical engineering projects at {company or 'the hiring company'}.",
+        f"• Design, develop, test, and maintain scalable applications for the {title or 'Software Engineering'} role.",
+        "• Collaborate with engineering team leads, technical architects, and product managers.",
+        "• Troubleshoot bugs, optimize query performance, and write efficient, clean code.",
+        "• Follow software engineering best practices, code reviews, and testing protocols."
+    ]
+    description = "\n".join(description_bullets)
 
-    job_type = "Full-Time"
-    if 'intern' in raw_text.lower() or 'internship' in raw_text.lower():
-        job_type = "Internship"
+    responsibilities_bullets = [
+        f"• Develop and maintain software components according to client and product requirements.",
+        "• Write clean, scalable, and well-documented code in primary technologies.",
+        "• Debug and resolve technical production issues in a timely manner.",
+        "• Participate in team agile sprints, technical code reviews, and quality assurance."
+    ]
+    responsibilities = "\n".join(responsibilities_bullets)
 
-    skills = ""
-    skills_match = re.search(r'(?:Skills|Key Skills|Required Skills|Technologies)\s*:\s*([^\n\r]+)', raw_text, re.I)
-    if skills_match:
-        skills = skills_match.group(1).strip()
-    else:
-        found_skills = []
-        for s in ['Python', 'Java', 'C++', 'SQL', 'Excel', 'JavaScript', 'HTML/CSS', 'Data Structures', 'AWS', 'Power BI', 'React', 'Problem Solving']:
-            if s.lower() in raw_text.lower():
-                found_skills.append(s)
-        skills = ", ".join(found_skills) if found_skills else "Java, Python, SQL, Communication Skills"
-
+    # 12. Application URL & Deadline
     app_url = ""
     url_match = re.search(r'https?://[^\s]+', raw_text)
     if url_match:
         app_url = url_match.group(0)
 
+    deadline = ""
+    dl_match = re.search(r'(?:Deadline|Last Date|Apply Before)\s*:\s*([^\n\r]+)', raw_text, re.I)
+    if dl_match:
+        deadline = dl_match.group(1).strip()
+
+    # 13. Campus to Career Guidance Generation
     c_name = company or "The hiring organization"
     t_name = title or "Software Engineer"
     
-    short_summary = f"{c_name} is currently inviting applications for {t_name} position located at {location}. Ideal candidates with {qualification} qualification ({experience}) and proficiency in {skills} can apply directly on the official career portal."
-
-    resp_match = re.search(r'(?:Responsibilities|Key Responsibilities|What you will do|Duties)\s*:\s*([\s\S]+?)(?=\n\s*(?:Eligibility|Skills|Qualification|Salary|Location|How to Apply)|$)', raw_text, re.I)
-    responsibilities = resp_match.group(1).strip() if resp_match else "1. Develop & maintain software components.\n2. Collaborate with technical team leads and peer engineers.\n3. Participate in code reviews, testing, and debugging."
-
-    elig_match = re.search(r'(?:Eligibility|Eligibility Criteria|Who can apply|Requirements)\s*:\s*([\s\S]+?)(?=\n\s*(?:Responsibilities|Skills|Salary|Location|How to Apply)|$)', raw_text, re.I)
-    eligibility = elig_match.group(1).strip() if elig_match else f"Candidates with {qualification} degree ({experience}). Good academic standing without active backlogs."
-
-    is_fresher = 'fresher' in experience.lower() or '0' in experience
-    campus_analysis = f"High-value career opportunity at {c_name} for {t_name}. Offers excellent exposure, structured career progression, and hands-on domain experience."
-    who_can_apply = f"Candidates with {qualification} ({'Freshers & early career professionals' if is_fresher else experience}). Must have foundational knowledge in {skills}."
-    resume_tips = f"1. Highlight projects using {skills} on page 1 of your resume.\n2. Include active GitHub repository links or live project URLs.\n3. Detail your individual role and technical stack for every project."
-    interview_tips = "Round 1: Online Aptitude & Technical MCQs.\nRound 2: Core Technical Interview & Problem Solving.\nRound 3: HR & Management Interview."
+    campus_analysis = f"• Strong entry-level career opportunity at {c_name} for the {t_name} role.\n• Provides hands-on exposure to modern software frameworks, enterprise tools, and real-world project lifecycles.\n• Excellent learning environment for freshers building a foundational engineering career."
+    who_can_apply = f"Suitable for final-year students, recent passouts ({qualification}), and early-career candidates with strong fundamentals in {skills}."
+    resume_tips = f"• Highlight academic and personal projects involving {skills} on page 1 of your resume.\n• Include clickable links to verified GitHub repositories or live web demos.\n• Quantify project results and clearly list your specific technical contribution."
+    interview_tips = f"• Revise core programming fundamentals and Data Structures (Arrays, Strings, HashMaps).\n• Practice SQL queries (JOINs, GROUP BY, Aggregate functions).\n• Be ready to explain your resume projects in detail including design decisions and challenges faced."
 
     return jsonify({
         'company': company,
+        'category_id': category_id,
+        'category_name': category_name,
         'title': title,
         'qualification': qualification,
         'experience': experience,
@@ -243,7 +312,8 @@ def ai_parse_job():
         'job_type': job_type,
         'skills': skills,
         'application_url': app_url,
-        'description': short_summary,
+        'application_deadline': deadline,
+        'description': description,
         'responsibilities': responsibilities,
         'eligibility': eligibility,
         'campus_analysis': campus_analysis,
@@ -251,6 +321,7 @@ def ai_parse_job():
         'resume_tips': resume_tips,
         'interview_tips': interview_tips
     })
+
 
 # --- AUTO GENERATE CAMPUS ANALYSIS API ---
 
@@ -1118,19 +1189,5 @@ def ai_autopilot():
                            last_run=last_run.value if last_run else 'Never',
                            logs=None,
                            title='AI Autopilot Job Finder - Admin')
-
-@admin_bp.route('/api/ping', methods=['POST', 'GET'])
-def admin_ping_server():
-    import time
-    start_time = time.time()
-    now_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
-    elapsed_ms = round((time.time() - start_time) * 1000, 2)
-    return jsonify({
-        'status': 'online',
-        'message': 'Keep-alive ping sent successfully! Server is active & awake.',
-        'timestamp': now_str,
-        'response_time': f"{elapsed_ms}ms"
-    }), 200
-
 
 
