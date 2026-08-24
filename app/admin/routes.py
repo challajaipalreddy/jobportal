@@ -13,12 +13,17 @@ from app.utils import generate_unique_slug, extract_youtube_id
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
+@admin_bp.route('/')
+def admin_index():
+    return redirect(url_for('admin.dashboard'))
+
 @admin_bp.before_request
 @login_required
 def check_admin_access():
     if not current_user.is_admin:
         flash('Access restricted to site administrators.', 'danger')
         return redirect(url_for('main.home'))
+
 
 # Helper function to get or create company
 def resolve_company(company_id_val, new_company_name_val, company_logo_val=None):
