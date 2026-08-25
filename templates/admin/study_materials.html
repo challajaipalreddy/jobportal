@@ -83,15 +83,66 @@
                             <td><span class="fw-bold">{{ m.download_count }}</span></td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="/{{ m.file_path }}" target="_blank" class="btn btn-outline-primary" title="View PDF">
+                                    <a href="{{ url_for('main.download_note', filename='db:' ~ m.id) }}" target="_blank" class="btn btn-outline-primary" title="View PDF">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <form action="{{ url_for('admin.study_material_delete', id=m.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this PDF?');">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editModal{{ m.id }}" title="Edit PDF">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <form action="{{ url_for('admin.study_material_delete', id=m.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this PDF permanently?');">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
                                         <button type="submit" class="btn btn-outline-danger" title="Delete">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+                                </div>
+
+                                <!-- Edit PDF Modal -->
+                                <div class="modal fade text-start" id="editModal{{ m.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content rounded-4 border-0 p-3">
+                                            <div class="modal-header border-0 pb-0">
+                                                <h5 class="modal-title fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i> Edit PDF Note Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form action="{{ url_for('admin.study_material_edit', id=m.id) }}" method="POST" enctype="multipart/form-data">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                                                <div class="modal-body py-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-semibold">PDF Title *</label>
+                                                        <input type="text" name="title" class="form-control" value="{{ m.title }}" required>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-semibold">Category *</label>
+                                                        <select name="category" class="form-select" required>
+                                                            <option value="Python Notes & Coding" {% if m.category == 'Python Notes & Coding' %}selected{% endif %}>Python Notes & Coding</option>
+                                                            <option value="Java & OOPs Notes" {% if m.category == 'Java & OOPs Notes' %}selected{% endif %}>Java & OOPs Notes</option>
+                                                            <option value="SQL & Database Notes" {% if m.category == 'SQL & Database Notes' %}selected{% endif %}>SQL & Database Notes</option>
+                                                            <option value="Aptitude & Reasoning Notes" {% if m.category == 'Aptitude & Reasoning Notes' %}selected{% endif %}>Aptitude & Reasoning Notes</option>
+                                                            <option value="Company Specific Placement Notes" {% if m.category == 'Company Specific Placement Notes' %}selected{% endif %}>Company Specific Placement Notes</option>
+                                                            <option value="Data Science & Power BI Notes" {% if m.category == 'Data Science & Power BI Notes' %}selected{% endif %}>Data Science & Power BI Notes</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-semibold">Replace PDF File (Optional)</label>
+                                                        <input type="file" name="pdf_file" class="form-control" accept=".pdf">
+                                                        <span class="text-muted extra-small">Leave empty to keep existing PDF file.</span>
+                                                    </div>
+
+                                                    <div class="mb-2">
+                                                        <label class="form-label small fw-semibold">Brief Description</label>
+                                                        <textarea name="description" class="form-control" rows="3">{{ m.description or '' }}</textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer border-0 pt-0">
+                                                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Save Changes</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -109,3 +160,4 @@
     </div>
 </div>
 {% endblock %}
+

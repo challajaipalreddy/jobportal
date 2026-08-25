@@ -84,21 +84,50 @@ def study_materials():
                            pass_price=price_setting.value if price_setting else '99',
                            title='PDF Notes Management - Admin')
 
-@admin_bp.route('/study-materials/<int:id>/toggle-premium', methods=['POST'])
-def study_material_toggle_premium(id):
+@admin_bp.route('/study-materials/<int:id>/edit', methods=['POST'])
+def study_material_edit(id):
     mat = StudyMaterial.query.get_or_404(id)
-    mat.is_premium = not mat.is_premium
+    title = request.form.get('title', '').strip()
+    category = request.form.get('category', '').strip()
+    description = request.form.get('description', '').strip()
+
+    if title:
+        mat.title = title
+        mat.slug = generate_unique_slug(StudyMaterial, title, current_id=mat.id)
+    if category:
+        mat.category = category
+    mat.description = description
+
+    if 'pdf_file' in request.files:
+        file = request.files['pdf_file']
+        if file and file.filename.lower().endswith('.pdf'):
+            filename = secure_filename(file.filename)
+            upload_dir = os.path.join(current_app.root_path, '..', 'static', 'uploads', 'pdfs')
+            os.makedirs(upload_dir, exist_ok=True)
+            save_path = os.path.join(upload_dir, filename)
+            file.save(save_path)
+            mat.file_path = f"static/uploads/pdfs/{filename}"
+
     db.session.commit()
-    flash(f"Updated access mode for '{mat.title}' to {'Premium Paid' if mat.is_premium else 'Free Download'}.", 'success')
+    flash(f"PDF Study Material '{mat.title}' updated successfully!", 'success')
     return redirect(url_for('admin.study_materials'))
+
 
 @admin_bp.route('/study-materials/<int:id>/delete', methods=['POST'])
 def study_material_delete(id):
     mat = StudyMaterial.query.get_or_404(id)
+    if mat.file_path and mat.file_path.startswith('static/uploads/pdfs/'):
+        full_path = os.path.join(current_app.root_path, '..', mat.file_path)
+        if os.path.exists(full_path):
+            try:
+                os.remove(full_path)
+            except Exception:
+                pass
     db.session.delete(mat)
     db.session.commit()
-    flash('PDF Study Material deleted.', 'info')
+    flash(f"PDF '{mat.title}' deleted permanently.", 'info')
     return redirect(url_for('admin.study_materials'))
+
 
 @admin_bp.route('/settings/update-pass-price', methods=['POST'])
 def update_pass_price():
