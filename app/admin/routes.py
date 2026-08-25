@@ -38,6 +38,8 @@ def resolve_company(company_id_val, new_company_name_val, company_logo_val=None)
         return company_id_val
     return None
 
+from app.main.routes import PRESET_STUDY_MATERIALS, get_deleted_preset_ids
+
 # --- STUDY MATERIALS / PDF MANAGEMENT IN ADMIN ---
 
 @admin_bp.route('/study-materials', methods=['GET', 'POST'])
@@ -76,57 +78,75 @@ def study_materials():
         else:
             flash("Failed to upload PDF. Ensure title is provided and file is a .pdf document.", 'danger')
 
-    materials = StudyMaterial.query.order_by(StudyMaterial.created_at.desc()).all()
+    deleted_ids = get_deleted_preset_ids()
+    materials_list = []
+
+    # Include non-deleted preset PDFs
+    for cat_name, notes in PRESET_STUDY_MATERIALS.items():
+        for note in notes:
+            if note['id'] not in deleted_ids:
+                materials_list.append({
+                    'id': note['id'],
+                    'title': note['title'],
+                    'category': cat_name,
+                    'file_path': note['file'],
+                    'download_count': 'Preset',
+                    'is_preset': True,
+                    'created_at': 'System Note'
+                })
+
+    # Include custom uploaded DB materials
+    try:
+        db_mats = StudyMaterial.query.order_by(StudyMaterial.created_at.desc()).all()
+        for m in db_mats:
+            materials_list.insert(0, {
+                'id': f'db-{m.id}',
+                'title': m.title,
+                'category': m.category,
+                'file_path': f'db:{m.id}',
+                'download_count': m.download_count,
+                'is_preset': False,
+                'created_at': m.created_at.strftime('%b %d, %Y')
+            })
+    except Exception:
+        pass
+
     price_setting = SiteSetting.query.filter_by(key='study_pass_price').first()
 
     return render_template('admin/study_materials.html', 
-                           materials=materials, 
+                           materials=materials_list, 
                            pass_price=price_setting.value if price_setting else '99',
                            title='PDF Notes Management - Admin')
 
-@admin_bp.route('/study-materials/<int:id>/edit', methods=['POST'])
-def study_material_edit(id):
-    mat = StudyMaterial.query.get_or_404(id)
-    title = request.form.get('title', '').strip()
-    category = request.form.get('category', '').strip()
-    description = request.form.get('description', '').strip()
-
-    if title:
-        mat.title = title
-        mat.slug = generate_unique_slug(StudyMaterial, title, current_id=mat.id)
-    if category:
-        mat.category = category
-    mat.description = description
-
-    if 'pdf_file' in request.files:
-        file = request.files['pdf_file']
-        if file and file.filename.lower().endswith('.pdf'):
-            filename = secure_filename(file.filename)
-            upload_dir = os.path.join(current_app.root_path, '..', 'static', 'uploads', 'pdfs')
-            os.makedirs(upload_dir, exist_ok=True)
-            save_path = os.path.join(upload_dir, filename)
-            file.save(save_path)
-            mat.file_path = f"static/uploads/pdfs/{filename}"
-
-    db.session.commit()
-    flash(f"PDF Study Material '{mat.title}' updated successfully!", 'success')
-    return redirect(url_for('admin.study_materials'))
-
-
-@admin_bp.route('/study-materials/<int:id>/delete', methods=['POST'])
+@admin_bp.route('/study-materials/<path:id>/delete', methods=['POST'])
 def study_material_delete(id):
-    mat = StudyMaterial.query.get_or_404(id)
-    if mat.file_path and mat.file_path.startswith('static/uploads/pdfs/'):
-        full_path = os.path.join(current_app.root_path, '..', mat.file_path)
-        if os.path.exists(full_path):
-            try:
-                os.remove(full_path)
-            except Exception:
-                pass
-    db.session.delete(mat)
-    db.session.commit()
-    flash(f"PDF '{mat.title}' deleted permanently.", 'info')
+    if str(id).startswith('preset-'):
+        deleted_ids = get_deleted_preset_ids()
+        deleted_ids.add(str(id))
+        setting = SiteSetting.query.filter_by(key='deleted_preset_notes').first()
+        if not setting:
+            setting = SiteSetting(key='deleted_preset_notes', value=",".join(deleted_ids))
+            db.session.add(setting)
+        else:
+            setting.value = ",".join(deleted_ids)
+        db.session.commit()
+        flash('Preset PDF note deleted from library.', 'info')
+    else:
+        try:
+            mat_id = int(str(id).replace('db-', ''))
+            mat = StudyMaterial.query.get_or_404(mat_id)
+            if mat.file_path and mat.file_path.startswith('static/uploads/pdfs/'):
+                full_path = os.path.join(current_app.root_path, '..', mat.file_path)
+                if os.path.exists(full_path):
+                    try: os.remove(full_path)
+                    except Exception: pass
+            db.session.delete(mat)
+            db.session.commit()
+            flash('Uploaded PDF note deleted permanently.', 'info')
+        except Exception:
+            flash('Could not delete PDF note.', 'danger')
     return redirect(url_for('admin.study_materials'))
+
 
 
 @admin_bp.route('/settings/update-pass-price', methods=['POST'])

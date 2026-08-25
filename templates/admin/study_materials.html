@@ -56,19 +56,22 @@
         </div>
     </div>
 
-    <!-- Right Column: Uploaded PDFs Table -->
+    <!-- Right Column: All PDF Notes Table -->
     <div class="col-lg-7">
         <div class="card border-0 shadow-sm rounded-4 p-4">
-            <h5 class="fw-bold border-bottom pb-2 mb-3">Uploaded PDF Notes Library ({{ materials|length }})</h5>
+            <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+                <h5 class="fw-bold mb-0">All PDF Notes Library ({{ materials|length }})</h5>
+                <span class="badge bg-primary rounded-pill">{{ materials|length }} Documents</span>
+            </div>
 
             {% if materials %}
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead class="table-light small">
+            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                <table class="table align-middle table-hover mb-0">
+                    <thead class="table-light small sticky-top">
                         <tr>
                             <th>PDF Title</th>
                             <th>Category</th>
-                            <th>Downloads</th>
+                            <th>Type</th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -76,73 +79,29 @@
                         {% for m in materials %}
                         <tr>
                             <td>
-                                <strong class="text-dark d-block mb-1">{{ m.title }}</strong>
-                                <span class="text-muted extra-small"><i class="bi bi-calendar-event me-1"></i> {{ m.created_at.strftime('%b %d, %Y') }}</span>
+                                <strong class="text-dark d-block mb-0 extra-small fw-bold">{{ m.title }}</strong>
+                                <span class="text-muted extra-small"><i class="bi bi-tag me-1"></i> {{ m.created_at }}</span>
                             </td>
                             <td><span class="badge bg-light text-dark border extra-small">{{ m.category }}</span></td>
-                            <td><span class="fw-bold">{{ m.download_count }}</span></td>
+                            <td>
+                                {% if m.is_preset %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle extra-small">Preset</span>
+                                {% else %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle extra-small">Uploaded</span>
+                                {% endif %}
+                            </td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for('main.download_note', filename='db:' ~ m.id) }}" target="_blank" class="btn btn-outline-primary" title="View PDF">
-                                        <i class="bi bi-eye"></i>
+                                    <a href="{{ url_for('main.download_note', filename=m.file_path) }}" target="_blank" class="btn btn-outline-primary" title="View PDF">
+                                        <i class="bi bi-eye"></i> View
                                     </a>
-                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editModal{{ m.id }}" title="Edit PDF">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
+
                                     <form action="{{ url_for('admin.study_material_delete', id=m.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this PDF permanently?');">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
-                                        <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                        <button type="submit" class="btn btn-outline-danger" title="Delete PDF">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
-                                </div>
-
-                                <!-- Edit PDF Modal -->
-                                <div class="modal fade text-start" id="editModal{{ m.id }}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content rounded-4 border-0 p-3">
-                                            <div class="modal-header border-0 pb-0">
-                                                <h5 class="modal-title fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i> Edit PDF Note Details</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <form action="{{ url_for('admin.study_material_edit', id=m.id) }}" method="POST" enctype="multipart/form-data">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
-                                                <div class="modal-body py-3">
-                                                    <div class="mb-3">
-                                                        <label class="form-label small fw-semibold">PDF Title *</label>
-                                                        <input type="text" name="title" class="form-control" value="{{ m.title }}" required>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label small fw-semibold">Category *</label>
-                                                        <select name="category" class="form-select" required>
-                                                            <option value="Python Notes & Coding" {% if m.category == 'Python Notes & Coding' %}selected{% endif %}>Python Notes & Coding</option>
-                                                            <option value="Java & OOPs Notes" {% if m.category == 'Java & OOPs Notes' %}selected{% endif %}>Java & OOPs Notes</option>
-                                                            <option value="SQL & Database Notes" {% if m.category == 'SQL & Database Notes' %}selected{% endif %}>SQL & Database Notes</option>
-                                                            <option value="Aptitude & Reasoning Notes" {% if m.category == 'Aptitude & Reasoning Notes' %}selected{% endif %}>Aptitude & Reasoning Notes</option>
-                                                            <option value="Company Specific Placement Notes" {% if m.category == 'Company Specific Placement Notes' %}selected{% endif %}>Company Specific Placement Notes</option>
-                                                            <option value="Data Science & Power BI Notes" {% if m.category == 'Data Science & Power BI Notes' %}selected{% endif %}>Data Science & Power BI Notes</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label small fw-semibold">Replace PDF File (Optional)</label>
-                                                        <input type="file" name="pdf_file" class="form-control" accept=".pdf">
-                                                        <span class="text-muted extra-small">Leave empty to keep existing PDF file.</span>
-                                                    </div>
-
-                                                    <div class="mb-2">
-                                                        <label class="form-label small fw-semibold">Brief Description</label>
-                                                        <textarea name="description" class="form-control" rows="3">{{ m.description or '' }}</textarea>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer border-0 pt-0">
-                                                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
-                                                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Save Changes</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -153,11 +112,10 @@
             {% else %}
             <div class="text-center py-4 text-muted">
                 <i class="bi bi-folder-symlink fs-1 d-block mb-2"></i>
-                <p class="mb-0">No custom uploaded PDFs yet. Upload a file on the left!</p>
+                <p class="mb-0">No PDF study materials available.</p>
             </div>
             {% endif %}
         </div>
     </div>
 </div>
 {% endblock %}
-
