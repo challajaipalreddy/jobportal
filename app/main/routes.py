@@ -89,79 +89,82 @@ def home():
 
 # --- STUDY MATERIALS & PDF NOTES LIBRARY (100% FREE DOWNLOAD) ---
 
+def ensure_preset_notes_seeded():
+    if StudyMaterial.query.count() == 0:
+        preset_data = [
+            ('140 + Basic Python Programs', 'Python Notes & Coding', 'static/notes/python/140 + Basic Python Programs (1).pdf', 'bi-filetype-py', 'Complete beginner to advanced Python practice code collection.'),
+            ('Python Interview Codes & Solutions', 'Python Notes & Coding', 'static/notes/python/python interview codes.pdf', 'bi-code-square', 'Handpicked Python interview coding questions with step-by-step logic.'),
+            ('Project Interview Guide', 'Python Notes & Coding', 'static/notes/python/Project_Interview_Guide.pdf', 'bi-journal-code', 'How to explain Python projects in technical interviews.'),
+            ('Pandas Data Analysis Notes', 'Python Notes & Coding', 'static/notes/pandas.pdf', 'bi-table', 'Comprehensive Pandas library cheat sheet & data manipulation notes.'),
+            ('Java Core Complete Notes (Part 1)', 'Java & OOPs Notes', 'static/notes/java.pdf', 'bi-filetype-java', 'Fundamentals of Java programming & OOPs concepts.'),
+            ('Java Advanced Notes (Part 2)', 'Java & OOPs Notes', 'static/notes/java1.pdf', 'bi-filetype-java', 'Classes, Objects, Inheritance & Interfaces in Java.'),
+            ('Java Collections & Exception Notes', 'Java & OOPs Notes', 'static/notes/java2.pdf', 'bi-filetype-java', 'Lists, Sets, Maps, and Exception Handling.'),
+            ('Java Master Placement Guide', 'Java & OOPs Notes', 'static/notes/Jaava4.pdf', 'bi-journal-bookmark', 'Java interview questions and placement prep notes.'),
+            ('Java Conditional Statements Practice', 'Java & OOPs Notes', 'static/notes/Java_Conditional_Statements_Questions_Aligned.pdf', 'bi-check-square', 'If-else and switch-case practice problems.'),
+            ('Java I/O Questions & Solutions', 'Java & OOPs Notes', 'static/notes/Java_IO_Questions.pdf', 'bi-hdd', 'File reading, writing & Scanner class questions.'),
+            ('Java Looping Problems', 'Java & OOPs Notes', 'static/notes/Java_Looping_Problems.pdf', 'bi-arrow-repeat', 'For loops, while loops, and pattern printing questions.'),
+            ('Java Medium to Hard Problems', 'Java & OOPs Notes', 'static/notes/Java_Problems_Medium_Hard.pdf', 'bi-exclamation-triangle', 'Advanced logic & problem solving in Java.'),
+            ('Java String Problems', 'Java & OOPs Notes', 'static/notes/Java_String_Problems.pdf', 'bi-type', 'String manipulation, reversal, and substring questions.'),
+            ('Master SQL Complete Notes', 'SQL & Database Notes', 'static/notes/sq/Master SQl.pdf', 'bi-database-fill', 'Complete SQL tutorial from basic SELECT to advanced JOINs.'),
+            ('SQL 100 Interview Questions', 'SQL & Database Notes', 'static/notes/sq/SQL 100.pdf', 'bi-database-check', 'Top 100 SQL questions asked in technical rounds.'),
+            ('SQL 45 Important Questions', 'SQL & Database Notes', 'static/notes/sq/SQL 45 questions.pdf', 'bi-database-gear', '45 high-frequency SQL problem sets with solutions.'),
+            ('SQL Questions by Google', 'SQL & Database Notes', 'static/notes/sq/SQL questions by Google.pdf', 'bi-google', 'Real SQL interview problems asked in Google drives.'),
+            ('SQL Placement Questions', 'SQL & Database Notes', 'static/notes/sq/SQL questions for placement .pdf', 'bi-briefcase', 'Campus placement specific SQL question bank.'),
+            ('SQL Joins Master Notes', 'SQL & Database Notes', 'static/notes/sq/SQl Joins.pdf', 'bi-diagram-3-fill', 'Visual guide to INNER, LEFT, RIGHT & FULL OUTER JOINs.'),
+            ('SQL Window Functions Guide', 'SQL & Database Notes', 'static/notes/sq/Window Function.pdf', 'bi-window-stack', 'ROW_NUMBER(), RANK(), DENSE_RANK(), and LEAD/LAG.'),
+            ('SQL Cheat Sheet', 'SQL & Database Notes', 'static/notes/sq/sql Cheat Sheet.pdf', 'bi-file-earmark-code', 'Handy SQL syntax cheat sheet for quick revision.'),
+            ('SQL Business Analyst Notes', 'SQL & Database Notes', 'static/notes/sq/sql business analsyt.pdf', 'bi-graph-up', 'Data analysis queries for Business Analyst roles.'),
+            ('SQL Definitions & Theory', 'SQL & Database Notes', 'static/notes/sq/sql definitions.pdf', 'bi-book-half', 'DDL, DML, DCL, TCL, ACID properties & Normalization.'),
+            ('SQL Full Notes & Queries', 'SQL & Database Notes', 'static/notes/sq/sql full notes.pdf', 'bi-file-earmark-text', 'Full handwritten SQL notes with query examples.'),
+            ('MongoDB Interview Questions', 'SQL & Database Notes', 'static/notes/MongoDB_Interview_Questions.pdf', 'bi-filetype-json', 'NoSQL & MongoDB interview question bank.'),
+            ('Aptitude Topics & Shortcuts', 'Aptitude & Reasoning Notes', 'static/notes/apptitude/Aptitude Topics.pdf', 'bi-calculator', 'Quantitative aptitude formulas & shortcut calculation tricks.'),
+            ('Complete Placement Aptitude Guide', 'Aptitude & Reasoning Notes', 'static/notes/apptitude/topics.pdf', 'bi-puzzle', 'Comprehensive aptitude, logical & verbal reasoning notes.'),
+            ('TCS NQT Complete Study Material', 'Company Specific Placement Notes', 'static/notes/Tcs NQT.pdf', 'bi-building-fill-check', 'TCS NQT exam pattern, previous papers & sample questions.'),
+            ('Deloitte Placement Guide', 'Company Specific Placement Notes', 'static/notes/Deloitee.pdf', 'bi-building', 'Deloitte Analyst interview questions & test syllabus.'),
+            ('Cognizant Data Analyst Material', 'Company Specific Placement Notes', 'static/notes/Cognizant Data analyst.pdf', 'bi-file-earmark-bar-graph', 'Cognizant Data Analyst test pattern & preparation notes.'),
+            ('Cognizant 2025 Interview Questions', 'Company Specific Placement Notes', 'static/notes/Cognizant_Interview_Questions_2025.pdf', 'bi-question-circle', 'Recent Cognizant interview questions.'),
+            ('Data Structures & Algorithms (DSA)', 'Company Specific Placement Notes', 'static/notes/DSA.pdf', 'bi-diagram-2', 'Complete DSA notes covering Trees, Graphs & Dynamic Programming.'),
+            ('Power BI Master Notes', 'Data Science & Power BI Notes', 'static/notes/Power bi.pdf', 'bi-bar-chart-line-fill', 'Complete Power BI visual dashboards & DAX formulas.'),
+            ('Power BI Interview QnA', 'Data Science & Power BI Notes', 'static/notes/Power_BI_interview_QnA[1].pdf', 'bi-file-earmark-easel', 'Top Power BI interview questions & answers.'),
+            ('Myntra Data Analyst Interview Questions', 'Data Science & Power BI Notes', 'static/notes/Myntra Data Analyst Interview.pdf', 'bi-bag-check', 'Real Myntra Data Analyst interview case studies.'),
+            ('Roadmap for Data Analyst Career', 'Data Science & Power BI Notes', 'static/notes/Roadmap for data analysis.pdf', 'bi-signpost-split', 'Step-by-step career path to become a Data Analyst.'),
+            ('AWS Cloud Practitioner Guide', 'Data Science & Power BI Notes', 'static/notes/aws.pdf', 'bi-cloud-check', 'AWS cloud services, S3, EC2 & certification basics.')
+        ]
+        for title, cat, path, icon, desc in preset_data:
+            slug = generate_unique_slug(StudyMaterial, title)
+            mat = StudyMaterial(
+                title=title,
+                slug=slug,
+                category=cat,
+                description=desc,
+                file_path=path,
+                icon=icon
+            )
+            db.session.add(mat)
+        db.session.commit()
+
 @main_bp.route('/study-materials')
 def study_materials():
+    ensure_preset_notes_seeded()
     db_materials = StudyMaterial.query.order_by(StudyMaterial.created_at.desc()).all()
     
-    # Preset notes from local Notes folder
-    preset_categories = {
-        'Python Notes & Coding': [
-            {'id': 'preset-1', 'name': '140 + Basic Python Programs', 'file': 'python/140 + Basic Python Programs (1).pdf', 'icon': 'bi-filetype-py', 'desc': 'Complete beginner to advanced Python practice code collection.'},
-            {'id': 'preset-2', 'name': 'Python Interview Codes & Solutions', 'file': 'python/python interview codes.pdf', 'icon': 'bi-code-square', 'desc': 'Handpicked Python interview coding questions with step-by-step logic.'},
-            {'id': 'preset-3', 'name': 'Project Interview Guide', 'file': 'python/Project_Interview_Guide.pdf', 'icon': 'bi-journal-code', 'desc': 'How to explain Python projects in technical interviews.'},
-            {'id': 'preset-4', 'name': 'Pandas Data Analysis Notes', 'file': 'pandas.pdf', 'icon': 'bi-table', 'desc': 'Comprehensive Pandas library cheat sheet & data manipulation notes.'}
-        ],
-        'Java & OOPs Notes': [
-            {'id': 'preset-5', 'name': 'Java Core Complete Notes (Part 1)', 'file': 'java.pdf', 'icon': 'bi-filetype-java', 'desc': 'Fundamentals of Java programming & OOPs concepts.'},
-            {'id': 'preset-6', 'name': 'Java Advanced Notes (Part 2)', 'file': 'java1.pdf', 'icon': 'bi-filetype-java', 'desc': 'Classes, Objects, Inheritance & Interfaces in Java.'},
-            {'id': 'preset-7', 'name': 'Java Collections & Exception Notes', 'file': 'java2.pdf', 'icon': 'bi-filetype-java', 'desc': 'Lists, Sets, Maps, and Exception Handling.'},
-            {'id': 'preset-8', 'name': 'Java Master Placement Guide', 'file': 'Jaava4.pdf', 'icon': 'bi-journal-bookmark', 'desc': 'Java interview questions and placement prep notes.'},
-            {'id': 'preset-9', 'name': 'Java Conditional Statements Practice', 'file': 'Java_Conditional_Statements_Questions_Aligned.pdf', 'icon': 'bi-check-square', 'desc': 'If-else and switch-case practice problems.'},
-            {'id': 'preset-10', 'name': 'Java I/O Questions & Solutions', 'file': 'Java_IO_Questions.pdf', 'icon': 'bi-hdd', 'desc': 'File reading, writing & Scanner class questions.'},
-            {'id': 'preset-11', 'name': 'Java Looping Problems', 'file': 'Java_Looping_Problems.pdf', 'icon': 'bi-arrow-repeat', 'desc': 'For loops, while loops, and pattern printing questions.'},
-            {'id': 'preset-12', 'name': 'Java Medium to Hard Problems', 'file': 'Java_Problems_Medium_Hard.pdf', 'icon': 'bi-exclamation-triangle', 'desc': 'Advanced logic & problem solving in Java.'},
-            {'id': 'preset-13', 'name': 'Java String Problems', 'file': 'Java_String_Problems.pdf', 'icon': 'bi-type', 'desc': 'String manipulation, reversal, and substring questions.'}
-        ],
-        'SQL & Database Notes': [
-            {'id': 'preset-14', 'name': 'Master SQL Complete Notes', 'file': 'sq/Master SQl.pdf', 'icon': 'bi-database-fill', 'desc': 'Complete SQL tutorial from basic SELECT to advanced JOINs.'},
-            {'id': 'preset-15', 'name': 'SQL 100 Interview Questions', 'file': 'sq/SQL 100.pdf', 'icon': 'bi-database-check', 'desc': 'Top 100 SQL questions asked in technical rounds.'},
-            {'id': 'preset-16', 'name': 'SQL 45 Important Questions', 'file': 'sq/SQL 45 questions.pdf', 'icon': 'bi-database-gear', 'desc': '45 high-frequency SQL problem sets with solutions.'},
-            {'id': 'preset-17', 'name': 'SQL Questions by Google', 'file': 'sq/SQL questions by Google.pdf', 'icon': 'bi-google', 'desc': 'Real SQL interview problems asked in Google drives.'},
-            {'id': 'preset-18', 'name': 'SQL Placement Questions', 'file': 'sq/SQL questions for placement .pdf', 'icon': 'bi-briefcase', 'desc': 'Campus placement specific SQL question bank.'},
-            {'id': 'preset-19', 'name': 'SQL Joins Master Notes', 'file': 'sq/SQl Joins.pdf', 'icon': 'bi-diagram-3-fill', 'desc': 'Visual guide to INNER, LEFT, RIGHT & FULL OUTER JOINs.'},
-            {'id': 'preset-20', 'name': 'SQL Window Functions Guide', 'file': 'sq/Window Function.pdf', 'icon': 'bi-window-stack', 'desc': 'ROW_NUMBER(), RANK(), DENSE_RANK(), and LEAD/LAG.'},
-            {'id': 'preset-21', 'name': 'SQL Cheat Sheet', 'file': 'sq/sql Cheat Sheet.pdf', 'icon': 'bi-file-earmark-code', 'desc': 'Handy SQL syntax cheat sheet for quick revision.'},
-            {'id': 'preset-22', 'name': 'SQL Business Analyst Notes', 'file': 'sq/sql business analsyt.pdf', 'icon': 'bi-graph-up', 'desc': 'Data analysis queries for Business Analyst roles.'},
-            {'id': 'preset-23', 'name': 'SQL Definitions & Theory', 'file': 'sq/sql definitions.pdf', 'icon': 'bi-book-half', 'desc': 'DDL, DML, DCL, TCL, ACID properties & Normalization.'},
-            {'id': 'preset-24', 'name': 'SQL Full Notes & Queries', 'file': 'sq/sql full notes.pdf', 'icon': 'bi-file-earmark-text', 'desc': 'Full handwritten SQL notes with query examples.'},
-            {'id': 'preset-25', 'name': 'MongoDB Interview Questions', 'file': 'MongoDB_Interview_Questions.pdf', 'icon': 'bi-filetype-json', 'desc': 'NoSQL & MongoDB interview question bank.'}
-        ],
-        'Aptitude & Reasoning Notes': [
-            {'id': 'preset-26', 'name': 'Aptitude Topics & Shortcuts', 'file': 'apptitude/Aptitude Topics.pdf', 'icon': 'bi-calculator', 'desc': 'Quantitative aptitude formulas & shortcut calculation tricks.'},
-            {'id': 'preset-27', 'name': 'Complete Placement Aptitude Guide', 'file': 'apptitude/topics.pdf', 'icon': 'bi-puzzle', 'desc': 'Comprehensive aptitude, logical & verbal reasoning notes.'}
-        ],
-        'Company Specific Placement Notes': [
-            {'id': 'preset-28', 'name': 'TCS NQT Complete Study Material', 'file': 'Tcs NQT.pdf', 'icon': 'bi-building-fill-check', 'desc': 'TCS NQT exam pattern, previous papers & sample questions.'},
-            {'id': 'preset-29', 'name': 'Deloitte Placement Guide', 'file': 'Deloitee.pdf', 'icon': 'bi-building', 'desc': 'Deloitte Analyst interview questions & test syllabus.'},
-            {'id': 'preset-30', 'name': 'Cognizant Data Analyst Material', 'file': 'Cognizant Data analyst.pdf', 'icon': 'bi-file-earmark-bar-graph', 'desc': 'Cognizant Data Analyst test pattern & preparation notes.'},
-            {'id': 'preset-31', 'name': 'Cognizant 2025 Interview Questions', 'file': 'Cognizant_Interview_Questions_2025.pdf', 'icon': 'bi-question-circle', 'desc': 'Recent Cognizant interview questions.'},
-            {'id': 'preset-32', 'name': 'Data Structures & Algorithms (DSA)', 'file': 'DSA.pdf', 'icon': 'bi-diagram-2', 'desc': 'Complete DSA notes covering Trees, Graphs & Dynamic Programming.'}
-        ],
-        'Data Science & Power BI Notes': [
-            {'id': 'preset-33', 'name': 'Power BI Master Notes', 'file': 'Power bi.pdf', 'icon': 'bi-bar-chart-line-fill', 'desc': 'Complete Power BI visual dashboards & DAX formulas.'},
-            {'id': 'preset-34', 'name': 'Power BI Interview QnA', 'file': 'Power_BI_interview_QnA[1].pdf', 'icon': 'bi-file-earmark-easel', 'desc': 'Top Power BI interview questions & answers.'},
-            {'id': 'preset-35', 'name': 'Myntra Data Analyst Interview Questions', 'file': 'Myntra Data Analyst Interview.pdf', 'icon': 'bi-bag-check', 'desc': 'Real Myntra Data Analyst interview case studies.'},
-            {'id': 'preset-36', 'name': 'Roadmap for Data Analyst Career', 'file': 'Roadmap for data analysis.pdf', 'icon': 'bi-signpost-split', 'desc': 'Step-by-step career path to become a Data Analyst.'},
-            {'id': 'preset-37', 'name': 'AWS Cloud Practitioner Guide', 'file': 'aws.pdf', 'icon': 'bi-cloud-check', 'desc': 'AWS cloud services, S3, EC2 & certification basics.'}
-        ]
-    }
-
-    # Add custom uploaded DB materials to categories
+    categories = {}
     for mat in db_materials:
-        cat_name = mat.category
-        if cat_name not in preset_categories:
-            preset_categories[cat_name] = []
-        preset_categories[cat_name].insert(0, {
+        cat_name = mat.category or 'General Placement Notes'
+        if cat_name not in categories:
+            categories[cat_name] = []
+        categories[cat_name].append({
             'id': f'db-{mat.id}',
             'name': mat.title,
             'file': f'db:{mat.id}',
             'icon': mat.icon or 'bi-file-earmark-pdf',
-            'desc': mat.description or 'Uploaded PDF Note'
+            'desc': mat.description or 'PDF Note Document'
         })
 
     return render_template('pages/study_materials.html', 
-                           categories=preset_categories,
+                           categories=categories,
                            title="PDF Notes & Study Material Library - Campus to Career")
+
 
 @main_bp.route('/notes/download/<path:filename>')
 def download_note(filename):
