@@ -117,39 +117,6 @@
                                 <button type="button" onclick="confirmFormSubmit(event, 'Duplicate job posting as draft?')" form="dup-form-{{ job.id }}" class="btn btn-outline-secondary" title="Duplicate"><i class="bi bi-copy"></i></button>
                                 <button type="button" onclick="confirmFormSubmit(event, 'Delete job posting permanently?')" form="del-form-{{ job.id }}" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
                             </div>
-
-                            <!-- Hidden forms for action buttons -->
-                            <form id="dup-form-{{ job.id }}" action="{{ url_for('admin.job_duplicate', id=job.id) }}" method="POST" class="d-none"></form>
-                            <form id="del-form-{{ job.id }}" action="{{ url_for('admin.job_delete', id=job.id) }}" method="POST" class="d-none"></form>
-
-                            <!-- Quick Add Video Modal for each job -->
-                            <div class="modal fade text-start" id="videoModal{{ job.id }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content rounded-4 border-0 p-3">
-                                        <div class="modal-header border-0 pb-0">
-                                            <h5 class="modal-title fw-bold text-danger"><i class="bi bi-youtube me-2"></i> Attach Video Explanation</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <form action="{{ url_for('admin.job_quick_video', id=job.id) }}" method="POST">
-                                            <div class="modal-body py-3">
-                                                <p class="small text-muted mb-3">Job: <strong>{{ job.company.name }} — {{ job.title }}</strong></p>
-                                                <div class="mb-3">
-                                                    <label class="form-label small fw-semibold">YouTube Video URL</label>
-                                                    <input type="text" name="youtube_video_url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
-                                                </div>
-                                                <div class="mb-2">
-                                                    <label class="form-label small fw-semibold">Video Title (Optional)</label>
-                                                    <input type="text" name="youtube_title" class="form-control" value="{{ job.title }}">
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer border-0 pt-0">
-                                                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Attach Video</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
                         </td>
                     </tr>
                     {% else %}
@@ -176,4 +143,39 @@
         {% endif %}
     </div>
 </form>
+
+<!-- Standalone Action Forms and Modals (Outside Bulk Form to avoid HTML nesting) -->
+{% for job in jobs %}
+<form id="dup-form-{{ job.id }}" action="{{ url_for('admin.job_duplicate', id=job.id) }}" method="POST" class="d-none"></form>
+<form id="del-form-{{ job.id }}" action="{{ url_for('admin.job_delete', id=job.id) }}" method="POST" class="d-none"></form>
+
+<div class="modal fade text-start" id="videoModal{{ job.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-3">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger"><i class="bi bi-youtube me-2"></i> Attach Video Explanation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('admin.job_quick_video', id=job.id) }}" method="POST">
+                <div class="modal-body py-3">
+                    <p class="small text-muted mb-3">Job: <strong>{{ job.company.name }} — {{ job.title }}</strong></p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">YouTube Video URL</label>
+                        <input type="text" name="youtube_video_url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Video Title (Optional)</label>
+                        <input type="text" name="youtube_title" class="form-control" value="{{ job.title }}">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Attach Video</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}
+

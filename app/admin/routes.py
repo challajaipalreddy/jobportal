@@ -867,11 +867,19 @@ def jobs_import():
         file = request.files['import_file']
         filename = file.filename.lower()
         
-        rows_data = []
+        raw_rows = []
         if filename.endswith('.csv'):
-            stream = io.StringIO(file.stream.read().decode("UTF-8"), newline=None)
+            file_bytes = file.stream.read()
+            try:
+                content = file_bytes.decode('utf-8-sig')
+            except UnicodeDecodeError:
+                try:
+                    content = file_bytes.decode('utf-8')
+                except UnicodeDecodeError:
+                    content = file_bytes.decode('latin-1')
+            stream = io.StringIO(content, newline=None)
             csv_reader = csv.DictReader(stream)
-            rows_data = list(csv_reader)
+            raw_rows = list(csv_reader)
         elif filename.endswith('.xlsx'):
             import openpyxl
             wb = openpyxl.load_workbook(file)
@@ -879,14 +887,24 @@ def jobs_import():
             header = [str(cell.value or '').strip() for cell in sheet[1]]
             for row in sheet.iter_rows(min_row=2, values_only=True):
                 if any(row):
-                    rows_data.append(dict(zip(header, row)))
+                    raw_rows.append(dict(zip(header, row)))
+
+        # Normalize key dictionary names
+        rows_data = []
+        for r in raw_rows:
+            clean_r = {}
+            for k, v in r.items():
+                if k is not None:
+                    norm_k = str(k).strip().lower().replace('\ufeff', '')
+                    clean_r[norm_k] = str(v or '').strip()
+            rows_data.append(clean_r)
 
         for idx, row in enumerate(rows_data, start=1):
-            comp_name = str(row.get('company') or '').strip()
-            title = str(row.get('title') or '').strip()
-            app_url = str(row.get('application_url') or '').strip()
-            category_name = str(row.get('category') or '').strip()
-            comp_logo = str(row.get('company_logo') or '').strip()
+            comp_name = row.get('company') or row.get('company_name') or row.get('employer') or ''
+            title = row.get('title') or row.get('job_title') or row.get('position') or row.get('role') or ''
+            app_url = row.get('application_url') or row.get('apply_link') or row.get('url') or row.get('link') or ''
+            category_name = row.get('category') or row.get('job_category') or ''
+            comp_logo = row.get('company_logo') or row.get('logo') or ''
             
             errors = []
             if not comp_name: errors.append('Missing Company')
@@ -912,23 +930,23 @@ def jobs_import():
                 'company_logo': comp_logo,
                 'title': title,
                 'category_name': category_name,
-                'location': row.get('location', 'India'),
-                'experience': row.get('experience', '0–2 Years'),
-                'qualification': row.get('qualification', ''),
-                'job_type': row.get('job_type', 'Full-Time'),
-                'work_mode': row.get('work_mode', 'On-site'),
-                'skills': row.get('skills', ''),
-                'salary': row.get('salary', ''),
-                'short_description': row.get('short_description', ''),
-                'description': row.get('description', title),
-                'responsibilities': row.get('responsibilities', ''),
-                'eligibility': row.get('eligibility', ''),
+                'location': row.get('location') or 'India',
+                'experience': row.get('experience') or row.get('exp') or '0–2 Years',
+                'qualification': row.get('qualification') or row.get('education') or '',
+                'job_type': row.get('job_type') or row.get('type') or 'Full-Time',
+                'work_mode': row.get('work_mode') or row.get('mode') or 'On-site',
+                'skills': row.get('skills') or row.get('tech_stack') or '',
+                'salary': row.get('salary') or row.get('ctc') or '',
+                'short_description': row.get('short_description') or '',
+                'description': row.get('description') or title,
+                'responsibilities': row.get('responsibilities') or '',
+                'eligibility': row.get('eligibility') or '',
                 'application_url': app_url,
-                'source_url': row.get('source_url', ''),
-                'application_deadline': row.get('application_deadline', ''),
-                'youtube_url': row.get('youtube_url', ''),
-                'featured': True if str(row.get('featured')).lower() in ['yes', 'true', '1'] else False,
-                'status_val': str(row.get('status', 'Active')).capitalize(),
+                'source_url': row.get('source_url') or '',
+                'application_deadline': row.get('application_deadline') or row.get('deadline') or '',
+                'youtube_url': row.get('youtube_url') or '',
+                'featured': True if str(row.get('featured') or '').lower() in ['yes', 'true', '1'] else False,
+                'status_val': str(row.get('status') or 'Active').capitalize(),
                 'errors': errors,
                 'status': status
             })
@@ -980,7 +998,7 @@ def jobs_import():
                         work_mode=request.form.get(f'work_mode_{i}', 'On-site'),
                         skills=request.form.get(f'skills_{i}', ''),
                         salary=request.form.get(f'salary_{i}', ''),
-                        short_description=request.form.get(f'short_description', ''),
+                        short_description=request.form.get(f'short_description_{i}', '')[:250],
                         description=request.form.get(f'description_{i}', title),
                         responsibilities=request.form.get(f'responsibilities_{i}', ''),
                         eligibility=request.form.get(f'eligibility_{i}', ''),
@@ -1001,6 +1019,7 @@ def jobs_import():
         return redirect(url_for('admin.jobs_list'))
 
     return render_template('admin/jobs_import.html', preview_rows=preview_rows, title='Bulk Import Jobs - Admin')
+
 
 # --- DAILY YOUTUBE VIDEO UPDATE ---
 
