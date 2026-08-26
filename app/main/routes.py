@@ -336,12 +336,20 @@ Sitemap: {}/sitemap.xml
 
 @main_bp.route('/ads.txt')
 def ads_txt():
+    try:
+        project_root = os.path.normpath(os.path.abspath(os.path.join(current_app.root_path, '..')))
+        file_path = os.path.join(project_root, 'ads.txt')
+        if os.path.isfile(file_path):
+            return send_from_directory(project_root, 'ads.txt', mimetype='text/plain')
+    except Exception:
+        pass
+
     setting = SiteSetting.query.filter_by(key='google_adsense_client_id').first()
     client_id = setting.value.strip() if setting and setting.value else 'ca-pub-1976255607418432'
-    pub_id = client_id.replace('ca-pub-', '')
+    pub_id = client_id.replace('ca-pub-', '').strip()
     content = f"google.com, pub-{pub_id}, DIRECT, f08c47fec0942fa0\n"
     response = make_response(content)
-    response.headers['Content-Type'] = 'text/plain'
+    response.headers['Content-Type'] = 'text/plain; charset=utf-8'
     return response
 
 @main_bp.route('/sitemap.xml')
