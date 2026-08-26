@@ -334,6 +334,16 @@ Sitemap: {}/sitemap.xml
     response.headers['Content-Type'] = 'text/plain'
     return response
 
+@main_bp.route('/ads.txt')
+def ads_txt():
+    setting = SiteSetting.query.filter_by(key='google_adsense_client_id').first()
+    client_id = setting.value.strip() if setting and setting.value else 'ca-pub-1976255607418432'
+    pub_id = client_id.replace('ca-pub-', '')
+    content = f"google.com, pub-{pub_id}, DIRECT, f08c47fec0942fa0\n"
+    response = make_response(content)
+    response.headers['Content-Type'] = 'text/plain'
+    return response
+
 @main_bp.route('/sitemap.xml')
 def sitemap():
     jobs = Job.query.filter_by(status='Active').all()
@@ -352,3 +362,4 @@ def sitemap():
     response = make_response(xml)
     response.headers['Content-Type'] = 'application/xml'
     return response
+
