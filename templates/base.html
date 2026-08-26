@@ -22,6 +22,11 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
+
+    {% if adsense_enabled and adsense_client_id %}
+    <!-- Google AdSense Publisher Script -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-{{ adsense_client_id.replace('ca-pub-', '') }}" crossorigin="anonymous"></script>
+    {% endif %}
 </head>
 <body>
 

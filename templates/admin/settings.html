@@ -1,22 +1,96 @@
 {% extends "admin/base.html" %}
 
-{% block title %}Website Settings - Admin Panel{% endblock %}
+{% block title %}Website & Google AdSense Settings - Admin Panel{% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <h3 class="fw-bold mb-1"><i class="bi bi-gear me-2"></i> Website Settings</h3>
-        <p class="text-muted small mb-0">Configure global website announcement banners and parameters.</p>
+        <h3 class="fw-bold mb-1"><i class="bi bi-gear me-2"></i> Website & Google AdSense Settings</h3>
+        <p class="text-muted small mb-0">Manage global website banners, monetization settings, and Google AdSense integration.</p>
     </div>
 </div>
 
-<div class="card border-0 shadow-sm rounded-4 p-4 max-w-600">
-    <form action="{{ url_for('admin.settings') }}" method="POST">
-        <div class="mb-4">
-            <label class="form-label fw-semibold">Top Announcement Banner</label>
-            <input type="text" name="announcement_banner" value="{{ announcement }}" class="form-control" placeholder="e.g. 🔥 2026 Off-Campus Placement Drives Active Now!">
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <h5 class="fw-bold border-bottom pb-2 mb-3 text-primary"><i class="bi bi-currency-dollar me-2"></i> Google AdSense Integration</h5>
+            
+            <form action="{{ url_for('admin.settings') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                <div class="form-check form-switch mb-3 p-3 bg-light rounded-3 border">
+                    <input class="form-check-input ms-0 me-3" type="checkbox" name="google_adsense_enabled" value="true" id="adsenseToggle" {% if adsense_enabled %}checked{% endif %}>
+                    <label class="form-check-label fw-bold text-dark" for="adsenseToggle">
+                        Enable Google AdSense & Monetization Ads Across Website
+                    </label>
+                    <p class="text-muted extra-small mb-0 ms-0 mt-1">When enabled, Google Ads will be displayed automatically on home, job listing, study materials, and job detail pages.</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold small">Google AdSense Publisher Client ID *</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted fw-bold">ca-pub-</span>
+                        <input type="text" name="google_adsense_client_id" value="{{ adsense_client_id.replace('ca-pub-', '') if adsense_client_id else '' }}" class="form-control" placeholder="1234567890123456">
+                    </div>
+                    <span class="text-muted extra-small mt-1 d-block">Found in your Google AdSense Dashboard -> Account -> Account Information. Example: <code>ca-pub-1234567890123456</code></span>
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="fw-bold border-bottom pb-2 mb-3 text-secondary"><i class="bi bi-sliders me-2"></i> General Website Settings</h5>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Top Sticky Announcement Banner</label>
+                    <input type="text" name="announcement_banner" value="{{ announcement }}" class="form-control" placeholder="e.g. 🔥 2026 Off-Campus Placement Drives Active Now!">
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Study Pass Price (₹)</label>
+                        <input type="text" name="study_pass_price" value="{{ pass_price }}" class="form-control" placeholder="99">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">UPI ID for Payments</label>
+                        <input type="text" name="upi_id" value="{{ upi_id }}" class="form-control" placeholder="campustocareer@upi">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                    <i class="bi bi-save me-1"></i> Save All Settings
+                </button>
+            </form>
         </div>
-        <button type="submit" class="btn btn-accent rounded-pill px-4">Save Settings</button>
-    </form>
+    </div>
+
+    <!-- Right Column: AdSense Approval Checklist & Guide -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-light">
+            <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-patch-check-fill text-success me-2"></i> Google AdSense Approval Guide</h5>
+            
+            <p class="small text-muted mb-3">Your website is pre-configured with all required pages and metadata for quick Google AdSense approval!</p>
+
+            <div class="mb-3">
+                <h6 class="fw-bold small text-dark mb-2">Steps to Get Approved & Start Earning:</h6>
+                <ol class="small text-secondary ps-3 mb-0">
+                    <li class="mb-2">Go to <a href="https://adsense.google.com" target="_blank" class="fw-bold text-primary">Google AdSense</a> and sign in with your Google account.</li>
+                    <li class="mb-2">Click <strong>Sites -> Add Site</strong> and enter your domain: <code>https://jobportal-3-123t.onrender.com</code></li>
+                    <li class="mb-2">Copy your <strong>Publisher ID</strong> (starts with <code>ca-pub-</code>) and paste it into the left form field above.</li>
+                    <li class="mb-2">Check the <strong>Enable Google AdSense</strong> checkbox and click <strong>Save Settings</strong>.</li>
+                    <li class="mb-2">Google will inspect your site within 24-48 hours. Once approved, live Google Ads will automatically start showing and generating revenue!</li>
+                </ol>
+            </div>
+
+            <div class="bg-white p-3 rounded-3 border">
+                <h6 class="fw-bold extra-small text-uppercase text-muted mb-2"><i class="bi bi-check-circle-fill text-success me-1"></i> Pre-requisites Already Built In:</h6>
+                <ul class="list-unstyled extra-small mb-0 text-dark">
+                    <li class="mb-1">✔ High-quality original job posts & study materials</li>
+                    <li class="mb-1">✔ Fast, mobile-responsive layout</li>
+                    <li class="mb-1">✔ Privacy Policy page & Terms & Conditions</li>
+                    <li class="mb-1">✔ About Us & Contact Us pages</li>
+                    <li class="mb-1">✔ Sitemap.xml & Robots.txt for Google indexing</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

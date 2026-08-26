@@ -241,10 +241,25 @@
                 </div>
             </div>
 
-            <!-- Ad Slot Placeholder Inside Content -->
+            <!-- Google AdSense Responsive Unit -->
+            {% if adsense_enabled and adsense_client_id %}
+            <div class="my-4 p-2 bg-light rounded border text-center">
+                <span class="extra-small text-uppercase text-muted d-block mb-1" style="font-size: 0.65rem;">Advertisement</span>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-{{ adsense_client_id.replace('ca-pub-', '') }}"
+                     data-ad-slot="auto"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+            {% else %}
             <div class="ad-slot-container my-3">
                 <span>ADVERTISEMENT</span>
             </div>
+            {% endif %}
 
             <!-- Disclaimer -->
             <div class="p-3 bg-light rounded-3 border text-muted small mb-4">

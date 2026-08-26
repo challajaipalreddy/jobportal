@@ -1295,19 +1295,40 @@ def settings():
         else:
             upi_setting.value = upi_id
 
+        # Google AdSense Settings
+        ads_client_id = request.form.get('google_adsense_client_id', '').strip()
+        ads_id_setting = SiteSetting.query.filter_by(key='google_adsense_client_id').first()
+        if not ads_id_setting:
+            ads_id_setting = SiteSetting(key='google_adsense_client_id', value=ads_client_id)
+            db.session.add(ads_id_setting)
+        else:
+            ads_id_setting.value = ads_client_id
+
+        ads_enabled = 'true' if request.form.get('google_adsense_enabled') == 'true' else 'false'
+        ads_en_setting = SiteSetting.query.filter_by(key='google_adsense_enabled').first()
+        if not ads_en_setting:
+            ads_en_setting = SiteSetting(key='google_adsense_enabled', value=ads_enabled)
+            db.session.add(ads_en_setting)
+        else:
+            ads_en_setting.value = ads_enabled
+
         db.session.commit()
-        flash('Website settings saved!', 'success')
+        flash('Website & Google AdSense settings saved successfully!', 'success')
         return redirect(url_for('admin.settings'))
 
     announcement_setting = SiteSetting.query.filter_by(key='announcement_banner').first()
     price_setting = SiteSetting.query.filter_by(key='study_pass_price').first()
     upi_setting = SiteSetting.query.filter_by(key='upi_id').first()
+    ads_id_setting = SiteSetting.query.filter_by(key='google_adsense_client_id').first()
+    ads_en_setting = SiteSetting.query.filter_by(key='google_adsense_enabled').first()
 
     return render_template('admin/settings.html', 
                            announcement=announcement_setting.value if announcement_setting else '',
                            pass_price=price_setting.value if price_setting else '99',
                            upi_id=upi_setting.value if upi_setting else 'campustocareer@upi',
-                           title='Website Settings - Admin')
+                           adsense_client_id=ads_id_setting.value if ads_id_setting else '',
+                           adsense_enabled=(ads_en_setting.value == 'true') if ads_en_setting else False,
+                           title='Website & Google AdSense Settings - Admin')
 
 # --- PAYMENT SUBMISSIONS ---
 

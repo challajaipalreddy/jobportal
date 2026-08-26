@@ -38,15 +38,27 @@ def create_app(config_name=None):
     @app.context_processor
     def inject_global_data():
         top_categories = []
+        adsense_id = 'ca-pub-1976255607418432'
+        adsense_enabled = True
         try:
-            from app.models import Category
+            from app.models import Category, SiteSetting
             top_categories = Category.query.limit(6).all()
+            
+            ads_id_setting = SiteSetting.query.filter_by(key='google_adsense_client_id').first()
+            if ads_id_setting and ads_id_setting.value:
+                adsense_id = ads_id_setting.value.strip()
+            
+            ads_en_setting = SiteSetting.query.filter_by(key='google_adsense_enabled').first()
+            if ads_en_setting:
+                adsense_enabled = (ads_en_setting.value == 'true')
         except Exception:
-            top_categories = []
+            pass
 
         return dict(
             top_categories=top_categories,
-            now=os.environ.get('CURRENT_TIME', '2026')
+            now='2026',
+            adsense_client_id=adsense_id,
+            adsense_enabled=adsense_enabled
         )
 
     # Custom Jinja filters
