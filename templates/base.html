@@ -23,11 +23,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
 
-    {% if adsense_enabled and adsense_client_id %}
     <!-- Google AdSense Account Meta Tag & Script -->
-    <meta name="google-adsense-account" content="ca-pub-{{ adsense_client_id.replace('ca-pub-', '') }}">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-{{ adsense_client_id.replace('ca-pub-', '') }}" crossorigin="anonymous"></script>
-    {% endif %}
+    <meta name="google-adsense-account" content="ca-pub-1976255607418432">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1976255607418432" crossorigin="anonymous"></script>
 </head>
 <body>
 
