@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accenture Gamified Cognitive Assessment Portal 2026</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <div class="app-root">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="navbar">
+      <div class="nav-brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="logo-icon">
+            <path d="M4 18l10-6L4 6v12zm11-12v12l5-6-5-6z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Accenture Prep</span>
+          <span class="brand-badge">Full-Stack Portal 2026</span>
+        </div>
+      </div>
+
+      <div id="navUserSection" class="nav-user hidden">
+        <div class="server-status-pill">
+          <span class="status-dot green"></span>
+          <span id="apiStatusText">Server API Connected</span>
+        </div>
+        <div class="user-info">
+          <span id="navUserName" class="user-name">Candidate</span>
+          <span id="navUserEmail" class="user-email">email@domain.com</span>
+        </div>
+        <button id="navSoundBtn" class="btn-icon" title="Toggle Audio">🔊</button>
+        <button id="logoutBtn" class="btn btn-sm btn-ghost">Logout</button>
+      </div>
+    </header>
+
+    <!-- AUTHENTICATION VIEW (Signup & Login) -->
+    <section id="authView" class="view-section">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h2>Candidate Assessment Portal</h2>
+          <p>Login or create an account to start your Accenture Gamified Practice</p>
+        </div>
+
+        <div class="auth-tabs">
+          <button id="tabLoginBtn" class="auth-tab active">Login</button>
+          <button id="tabSignupBtn" class="auth-tab">Sign Up</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm" class="auth-form">
+          <div class="form-group">
+            <label for="loginEmail">Personal Email ID</label>
+            <input type="email" id="loginEmail" placeholder="candidate@email.com" required />
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" required />
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Login & Continue</button>
+        </form>
+
+        <!-- SIGNUP FORM -->
+        <form id="signupForm" class="auth-form hidden">
+          <div class="form-group">
+            <label for="signupName">Full Name</label>
+            <input type="text" id="signupName" placeholder="John Doe" required />
+          </div>
+          <div class="form-group">
+            <label for="signupEmail">Personal Email ID</label>
+            <input type="email" id="signupEmail" placeholder="candidate@email.com" required />
+          </div>
+          <div class="form-group">
+            <label for="signupPassword">Password</label>
+            <input type="password" id="signupPassword" placeholder="••••••••" required />
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Create Account & Start</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- DASHBOARD VIEW -->
+    <section id="dashboardView" class="view-section hidden">
+      <div class="hero-banner">
+        <div class="hero-content">
+          <span class="hero-tag">Official Format Practice</span>
+          <h1>Accenture Cognitive Assessment (Gamified Round)</h1>
+          <p>Complete the gamified test modules back-to-back under relaxed practice mode with infinite generated practice examples.</p>
+          <div class="hero-actions">
+            <button id="startAllGamesBtn" class="btn btn-primary btn-lg">🚀 Start Full Assessment Series</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLATFORM STATS STRIP -->
+      <div class="stats-strip">
+        <div class="strip-card">
+          <span class="strip-val" id="platTotalUsers">1,240</span>
+          <span class="strip-lbl">Active Candidates</span>
+        </div>
+        <div class="strip-card">
+          <span class="strip-val" id="platTotalAttempts">4,890</span>
+          <span class="strip-lbl">Mock Assessments Completed</span>
+        </div>
+        <div class="strip-card">
+          <span class="strip-val" id="platTopScore">780 pts</span>
+          <span class="strip-lbl">Highest Platform Score</span>
+        </div>
+      </div>
+
+      <!-- GAME MODULE CARDS (ONLY GAME 1 & GAME 2) -->
+      <div class="modules-grid">
+
+        <!-- Module 1 -->
+        <div class="module-card">
+          <div class="module-badge">Game 1</div>
+          <div class="module-icon">🗝️</div>
+          <h3>Door & Key (Memory Maze)</h3>
+          <p>Navigate hidden walls to collect keys and reach the exit door under time pressure.</p>
+          <div class="module-meta">
+            <span>⏱️ 4 min / round</span>
+            <span>🧩 12 Levels + Infinite Examples</span>
+          </div>
+          <button class="btn btn-outline start-game-btn" data-game="1">Practice Game 1</button>
+        </div>
+
+        <!-- Module 2 -->
+        <div class="module-card">
+          <div class="module-badge">Game 2</div>
+          <div class="module-icon">🫧</div>
+          <h3>Select Bubbles (Speed Math)</h3>
+          <p>Order floating math expressions from lowest to highest value in rapid 15-second rounds.</p>
+          <div class="module-meta">
+            <span>⏱️ 15 sec / question</span>
+            <span>⚡ 40 Questions (20 Easy + 20 Medium)</span>
+          </div>
+          <button class="btn btn-outline start-game-btn" data-game="2">Practice Game 2</button>
+        </div>
+
+      </div>
+
+      <!-- DASHBOARD TABS: ATTEMPT HISTORY & GLOBAL LEADERBOARD -->
+      <div class="dash-tabs-container card">
+        <div class="dash-tabs-header">
+          <button id="dashTabHistory" class="dash-tab active">Your Assessment History</button>
+          <button id="dashTabLeaderboard" class="dash-tab">🏆 Global Candidate Leaderboard</button>
+        </div>
+
+        <!-- TAB 1: HISTORY -->
+        <div id="tabContentHistory" class="dash-tab-content">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Game Module</th>
+                  <th>Score</th>
+                  <th>Accuracy</th>
+                  <th>Time Spent</th>
+                </tr>
+              </thead>
+              <tbody id="attemptHistoryBody">
+                <tr><td colspan="5" class="empty-msg">No past assessment attempts recorded yet. Start practicing above!</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 2: LEADERBOARD -->
+        <div id="tabContentLeaderboard" class="dash-tab-content hidden">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Candidate Name</th>
+                  <th>Total Score</th>
+                  <th>Games Cleared</th>
+                  <th>Accuracy</th>
+                  <th>Percentile</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardBody">
+                <!-- Dynamically populated by server API -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- GAME 1 CONTAINER: MEMORY MAZE (12 LEVEL TABS & INFINITE EXAMPLES) -->
+    <section id="game1View" class="view-section hidden">
+      
+      <!-- VARIANT SELECTOR TABS (12 LEVEL TABS) -->
+      <div class="variant-tabs-bar">
+        <button class="variant-tab active" data-var="1">Lvl 1 (Easy 3x3)</button>
+        <button class="variant-tab" data-var="2">Lvl 2 (Easy Peek)</button>
+        <button class="variant-tab" data-var="3">Lvl 3 (Med 4x4)</button>
+        <button class="variant-tab" data-var="4">Lvl 4 (Med 2 Keys)</button>
+        <button class="variant-tab" data-var="5">Lvl 5 (Med Peek)</button>
+        <button class="variant-tab" data-var="6">Lvl 6 (Hard 5x5)</button>
+        <button class="variant-tab" data-var="7">Lvl 7 (Hard 2 Keys)</button>
+        <button class="variant-tab" data-var="8">Lvl 8 (Hard 3 Keys)</button>
+        <button class="variant-tab" data-var="9">Lvl 9 (Expert 6x6)</button>
+        <button class="variant-tab" data-var="10">Lvl 10 (Master 6x6)</button>
+        <button class="variant-tab" data-var="11">Lvl 11 (Insane 7x7)</button>
+        <button class="variant-tab" data-var="12">Lvl 12 (Ultimate 7x7)</button>
+      </div>
+
+      <div class="game-wrapper-box">
+        
+        <!-- GRID CONTAINER WITH OVERLAID MODAL & ARROWS -->
+        <div class="accenture-maze-container">
+          
+          <div id="g1Grid" class="accenture-grid grid-3x3"></div>
+
+          <!-- IN-GRID CAROUSEL INSTRUCTION MODAL -->
+          <div id="g1CarouselModal" class="in-grid-modal hidden">
+            <div class="carousel-content">
+              <p id="carouselText">In this exercise, you must move between boxes in a grid that contains a maze of invisible walls. You can navigate up, down, left or right, but NOT diagonally. You can also navigate back over the path you have taken.</p>
+              
+              <div id="carouselStartContainer" class="hidden">
+                <button id="carouselStartBtn" class="accenture-start-btn">START</button>
+              </div>
+
+              <div class="carousel-nav">
+                <button id="carouselPrevBtn" class="carousel-arrow disabled">‹</button>
+                <div class="carousel-dots">
+                  <span class="dot active"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                </div>
+                <button id="carouselNextBtn" class="carousel-arrow">›</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- BOTTOM HUD BAR (CIRCULAR TIMER, OBJECTIVE, MOVES & ATTEMPTS & NEW MAZE BUTTON) -->
+        <div class="accenture-bottom-hud">
+          <div class="hud-circle-timer">
+            <span id="g1Timer">03:56</span>
+          </div>
+          <div class="hud-objective-text">
+            <span>Collect <b id="g1KeysLabel">1 KEY</b> then get to <b>DOOR</b></span>
+            <span>Moves: <b id="g1MovesCount" style="color:var(--accent-gold);">0</b></span>
+            <span class="attempts-count">Attempts: <b id="g1AttemptsCount">0</b></span>
+          </div>
+          <button id="g1NextExampleBtn" class="btn btn-sm btn-outline" style="margin-left: 12px;" title="Generate another practice maze at this level">🔀 New Example</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- GAME 2 CONTAINER: SELECT BUBBLES (SIDE-BY-SIDE LAYOUT) -->
+    <section id="game2View" class="view-section hidden">
+      
+      <!-- GAME 2 CATEGORY TABS (20 EASY & 20 MEDIUM) -->
+      <div class="variant-tabs-bar">
+        <button class="g2-variant-tab active" data-set="1">Easy (20 Questions)</button>
+        <button class="g2-variant-tab" data-set="2">Medium (20 Questions)</button>
+      </div>
+
+      <!-- SIDE-BY-SIDE GAME WRAPPER LAYOUT -->
+      <div class="game-wrapper-box g2-side-layout">
+        
+        <!-- LEFT COLUMN: MAIN GAME STAGE & TOP HUD BAR -->
+        <div class="g2-main-column">
+          <!-- TOP HIGH-CONTRAST VISIBLE HUD BAR -->
+          <div class="accenture-bottom-hud g2-top-hud">
+            <div class="hud-circle-timer g2-timer-circle">
+              <span id="g2Timer">15s</span>
+            </div>
+            <div class="hud-objective-text">
+              <span>Order: <b style="color:#f59e0b; font-weight:800;">⬇️ LOWEST → HIGHEST</b></span>
+              <span>Score: <b id="g2Score" style="color:#10b981; font-size:16px; font-weight:800;">0</b></span>
+              <span class="attempts-count"><b id="g2LevelTag" style="color:#38bdf8; font-weight:800;">Q 1 / 40</b></span>
+            </div>
+            <button id="g2NextExampleBtn" class="btn btn-sm btn-outline" style="margin-left: 12px; border-color:#38bdf8; color:#f8fafc;" title="Generate new bubble math question">🔀 New Practice Set</button>
+          </div>
+
+          <!-- BUBBLE POND STAGE WITH IN-GRID CAROUSEL INSTRUCTION MODAL -->
+          <div class="accenture-bubble-container">
+            <div id="bubblesPond" class="bubbles-pond"></div>
+
+            <!-- IN-POND CAROUSEL INSTRUCTION MODAL -->
+            <div id="g2CarouselModal" class="in-grid-modal hidden">
+              <div class="carousel-content">
+                <p id="g2CarouselText">In this exercise, you must calculate the numerical value of each floating math bubble.</p>
+                
+                <div id="g2CarouselStartContainer" class="hidden">
+                  <button id="g2CarouselStartBtn" class="accenture-start-btn">START</button>
+                </div>
+
+                <div class="carousel-nav">
+                  <button id="g2CarouselPrevBtn" class="carousel-arrow disabled">‹</button>
+                  <div class="carousel-dots">
+                    <span class="g2-dot active"></span>
+                    <span class="g2-dot"></span>
+                    <span class="g2-dot"></span>
+                    <span class="g2-dot"></span>
+                  </div>
+                  <button id="g2CarouselNextBtn" class="carousel-arrow">›</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="g2FeedbackLine" class="feedback-text"></div>
+        </div>
+
+        <!-- RIGHT SIDEBAR COLUMN: EXAM ADVISORY & STRATEGY CARD -->
+        <div class="g2-sidebar-column">
+          <div class="exam-note-banner g2-sidebar-card">
+            <p class="banner-heading">📌 <b>EXAM ADVISORY & STRATEGY:</b></p>
+            <ul class="banner-list">
+              <li><b>Target Order Varies:</b> The sorting direction is NOT always the same! Read the HUD banner for each question carefully — some require <b>LOWEST → HIGHEST</b>, while others require <b>HIGHEST → LOWEST</b>.</li>
+              <li><b>Practice Reference Only:</b> These questions are provided for reference to help you practice and build speed. The exact numbers in your real exam will vary, so use these endless practice sets to boost your mental calculation speed!</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- INTERMEDIATE / FINAL COMPLETION SUMMARY VIEW -->
+    <section id="summaryView" class="view-section hidden">
+      <div class="summary-card">
+        <div class="summary-header">
+          <div id="summaryBadge" class="summary-badge">Game Completed!</div>
+          <h1 id="summaryTitle">Assessment Module Completed</h1>
+          <p id="summarySubtitle">Here is your detailed cognitive performance breakdown:</p>
+        </div>
+
+        <div class="score-ring-container">
+          <div id="summaryScoreRing" class="score-ring">
+            <span id="summaryScorePct" class="score-pct">0%</span>
+            <span class="score-lbl">Accuracy Score</span>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <span id="statCorrectVal" class="stat-num">0</span>
+            <span class="stat-name">Result Status</span>
+          </div>
+          <div class="stat-box">
+            <span id="statScoreVal" class="stat-num">0</span>
+            <span class="stat-name">Total Points</span>
+          </div>
+          <div class="stat-box">
+            <span id="statAvgTimeVal" class="stat-num">0 moves</span>
+            <span class="stat-name">Moves Taken</span>
+          </div>
+        </div>
+
+        <div class="summary-actions">
+          <button id="nextModuleBtn" class="btn btn-primary btn-lg">Proceed to Next Game →</button>
+          <button id="returnDashboardBtn" class="btn btn-ghost">Return to Dashboard</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
