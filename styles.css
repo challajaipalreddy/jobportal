@@ -1374,3 +1374,95 @@ th {
   z-index: 10001;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
+
+/* Nav Brand & WhatsApp Button */
+.nav-brand {
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.nav-brand:hover {
+  opacity: 0.85;
+}
+
+.whatsapp-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #25D366 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-nav-btn:hover {
+  background: #20ba5a !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4);
+}
+
+/* Back to Home Button in Game Header Bars */
+.back-home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 12px;
+}
+
+.back-home-btn:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: translateX(-2px);
+}
+
+/* Footer Community Card */
+.footer-community-card {
+  margin: 32px auto 16px auto;
+  max-width: 1440px;
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(30, 41, 59, 0.9));
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 16px;
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.footer-community-info h4 {
+  font-size: 17px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 4px;
+}
+
+.footer-community-info p {
+  font-size: 13.5px;
+  color: #94a3b8;
+}
+
+.footer-web-link {
+  color: #38bdf8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.footer-web-link:hover {
+  text-decoration: underline;
+}

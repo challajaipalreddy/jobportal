@@ -1390,12 +1390,25 @@ function showSummaryScreen(gameName, score, accuracy, timeSpent) {
   }
 }
 
+function returnToHomeDashboard() {
+  if (g1State && g1State.timer) clearInterval(g1State.timer);
+  if (g2State && g2State.timer) clearInterval(g2State.timer);
+  saveActiveGameState("dashboard");
+  hideAllViews();
+  if (dashboardView) dashboardView.classList.remove("hidden");
+  showToast("Returned to Home Dashboard");
+}
+
+const navBrandLogo = document.getElementById("navBrandLogo");
+const g1BackHomeBtn = document.getElementById("g1BackHomeBtn");
+const g2BackHomeBtn = document.getElementById("g2BackHomeBtn");
+
+if (navBrandLogo) navBrandLogo.onclick = returnToHomeDashboard;
+if (g1BackHomeBtn) g1BackHomeBtn.onclick = returnToHomeDashboard;
+if (g2BackHomeBtn) g2BackHomeBtn.onclick = returnToHomeDashboard;
+
 if (returnDashboardBtn) {
-  returnDashboardBtn.onclick = () => {
-    saveActiveGameState("dashboard");
-    hideAllViews();
-    if (dashboardView) dashboardView.classList.remove("hidden");
-  };
+  returnDashboardBtn.onclick = returnToHomeDashboard;
 }
 
 function hideAllViews() {
