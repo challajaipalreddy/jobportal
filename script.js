@@ -4,11 +4,13 @@ const API_BASE = window.location.origin.includes("localhost")
   ? "http://localhost:3000/api" 
   : `${window.location.origin}/api`;
 
-// --- STATE MANAGEMENT ---
+// --- GLOBAL STATE MANAGEMENT (SAFE HOISTING) ---
 let currentUser = null;
 let activeGame = null; // 1 or 2
 let isSeriesMode = false;
 let soundEnabled = true;
+let g1State = null;
+let g2State = null;
 
 // Audio Context
 let audioCtx = null;
@@ -79,21 +81,27 @@ function showToast(msg) {
   setTimeout(() => t.classList.add("hidden"), 2500);
 }
 
-// PERSISTENCE STATE HELPER ACROSS BROWSER REFRESHES
+// PERSISTENCE STATE HELPER
 function saveActiveGameState(viewName) {
-  const state = {
-    activeView: viewName,
-    g1VariantId: g1State ? g1State.variantId : 1,
-    g2SetId: g2State ? g2State.setId : 1,
-    g2QIndex: g2State ? g2State.qIndex : 0
-  };
-  localStorage.setItem("accenture_active_session_state", JSON.stringify(state));
+  try {
+    const state = {
+      activeView: viewName,
+      g1VariantId: g1State ? g1State.variantId : 1,
+      g2SetId: g2State ? g2State.setId : 1,
+      g2QIndex: g2State ? g2State.qIndex : 0
+    };
+    localStorage.setItem("accenture_active_session_state", JSON.stringify(state));
+  } catch (e) {
+    console.log("Error saving state", e);
+  }
 }
 
 function restoreActiveGameState() {
   hideAllViews();
-  if (dashboardView) dashboardView.classList.remove("hidden");
-  if (navUserSection) navUserSection.classList.remove("hidden");
+  const dbV = document.getElementById("dashboardView");
+  const navV = document.getElementById("navUserSection");
+  if (dbV) { dbV.classList.remove("hidden"); dbV.style.display = "block"; }
+  if (navV) { navV.classList.remove("hidden"); navV.style.display = "flex"; }
 }
 
 // --- AUTHENTICATION & FULL-STACK API ---
@@ -225,16 +233,15 @@ function loginUser(user) {
   if (!user || !user.email) return;
   currentUser = user;
 
-  // Persist session in LocalStorage so refresh NEVER boots user out
   localStorage.setItem("current_user_email", user.email);
   localStorage.setItem(`user_${user.email}`, JSON.stringify(user));
 
   if (navUserName) navUserName.textContent = user.name || user.email.split('@')[0];
   if (navUserEmail) navUserEmail.textContent = user.email;
 
-  if (authView) authView.classList.add("hidden");
-  if (dashboardView) dashboardView.classList.remove("hidden");
-  if (navUserSection) navUserSection.classList.remove("hidden");
+  hideAllViews();
+  if (dashboardView) { dashboardView.classList.remove("hidden"); dashboardView.style.display = "block"; }
+  if (navUserSection) { navUserSection.classList.remove("hidden"); navUserSection.style.display = "flex"; }
   
   fetchAttempts();
   fetchLeaderboard();
@@ -367,8 +374,8 @@ if (navSoundBtn) {
 }
 
 function goToDashboard() {
-  if (typeof g1State !== 'undefined' && g1State && g1State.timer) clearInterval(g1State.timer);
-  if (typeof g2State !== 'undefined' && g2State && g2State.timer) clearInterval(g2State.timer);
+  if (g1State && g1State.timer) clearInterval(g1State.timer);
+  if (g2State && g2State.timer) clearInterval(g2State.timer);
 
   if (!currentUser) {
     currentUser = { name: "Candidate", email: "guest@accenture.prep" };
@@ -376,13 +383,15 @@ function goToDashboard() {
 
   hideAllViews();
 
-  if (dashboardView) {
-    dashboardView.classList.remove("hidden");
-    dashboardView.style.display = "block";
+  const dbV = document.getElementById("dashboardView");
+  const navV = document.getElementById("navUserSection");
+  if (dbV) {
+    dbV.classList.remove("hidden");
+    dbV.style.display = "block";
   }
-  if (navUserSection) {
-    navUserSection.classList.remove("hidden");
-    navUserSection.style.display = "flex";
+  if (navV) {
+    navV.classList.remove("hidden");
+    navV.style.display = "flex";
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -472,7 +481,6 @@ function updateCarousel() {
   } else {
     carouselNextBtn.classList.remove("disabled");
   }
-  // START button is always visible immediately on slide 1
   if (carouselStartContainer) carouselStartContainer.classList.remove("hidden");
 }
 
@@ -497,7 +505,7 @@ if (carouselPrevBtn && carouselNextBtn && carouselStartBtn) {
   };
 }
 
-let g1State = {
+g1State = {
   variantId: 1,
   rows: 3, cols: 3,
   player: { r: 1, c: 1 }, startPos: { r: 1, c: 1 }, door: { r: 2, c: 2 },
@@ -528,9 +536,10 @@ if (g1NextExampleBtn) {
 
 function startGame1() {
   hideAllViews();
-  if (game1View) {
-    game1View.classList.remove("hidden");
-    game1View.style.display = "block";
+  const g1V = document.getElementById("game1View");
+  if (g1V) {
+    g1V.classList.remove("hidden");
+    g1V.style.display = "block";
   }
   
   variantTabs.forEach((t, i) => {
@@ -1016,7 +1025,6 @@ function updateG2Carousel() {
   } else {
     g2CarouselNextBtn.classList.remove("disabled");
   }
-  // START button is always visible immediately on slide 1
   if (g2CarouselStartContainer) g2CarouselStartContainer.classList.remove("hidden");
 }
 
@@ -1041,7 +1049,7 @@ if (g2CarouselPrevBtn && g2CarouselNextBtn && g2CarouselStartBtn) {
   };
 }
 
-let g2State = {
+g2State = {
   setId: 1,
   qIndex: 0, totalQ: 40, score: 0, correctCount: 0,
   timeLeft: 15, timer: null, current: null, clickedOrder: [], locked: false,
@@ -1069,9 +1077,10 @@ function startGame2() {
   g2State.setId = 1;
   g2State.qIndex = 0; g2State.score = 0; g2State.correctCount = 0;
   hideAllViews();
-  if (game2View) {
-    game2View.classList.remove("hidden");
-    game2View.style.display = "block";
+  const g2V = document.getElementById("game2View");
+  if (g2V) {
+    g2V.classList.remove("hidden");
+    g2V.style.display = "block";
   }
 
   g2VariantTabs.forEach((t, i) => {
@@ -1356,7 +1365,8 @@ function evaluateG2Question() {
 // Global Keyboard Listeners for Game Controls
 window.onkeydown = (e) => {
   const k = e.key;
-  if (game1View && !game1View.classList.contains("hidden")) {
+  const g1V = document.getElementById("game1View");
+  if (g1V && !g1V.classList.contains("hidden")) {
     let r = g1State.player.r, c = g1State.player.c;
     if (k === 'ArrowUp' || k === 'w') r--;
     if (k === 'ArrowDown' || k === 's') r++;
@@ -1382,7 +1392,11 @@ const returnDashboardBtn = document.getElementById("returnDashboardBtn");
 function showSummaryScreen(gameName, score, accuracy, timeSpent) {
   saveUserAttempt(gameName, score, accuracy, timeSpent);
   hideAllViews();
-  if (summaryView) summaryView.classList.remove("hidden");
+  const sV = document.getElementById("summaryView");
+  if (sV) {
+    sV.classList.remove("hidden");
+    sV.style.display = "block";
+  }
 
   if (summaryTitle) summaryTitle.textContent = `${gameName} Completed`;
   if (summaryScoreRing) summaryScoreRing.style.setProperty("--pct", accuracy);
@@ -1401,9 +1415,7 @@ function showSummaryScreen(gameName, score, accuracy, timeSpent) {
     } else {
       nextModuleBtn.textContent = "Back to Dashboard";
       nextModuleBtn.onclick = () => {
-        saveActiveGameState("dashboard");
-        hideAllViews();
-        if (dashboardView) dashboardView.classList.remove("hidden");
+        goToDashboard();
       };
     }
   }
@@ -1411,14 +1423,18 @@ function showSummaryScreen(gameName, score, accuracy, timeSpent) {
 
 if (returnDashboardBtn) {
   returnDashboardBtn.onclick = () => {
-    saveActiveGameState("dashboard");
-    hideAllViews();
-    if (dashboardView) dashboardView.classList.remove("hidden");
+    goToDashboard();
   };
 }
 
 function hideAllViews() {
-  const views = [authView, dashboardView, game1View, game2View, summaryView];
+  const views = [
+    document.getElementById("authView"),
+    document.getElementById("dashboardView"),
+    document.getElementById("game1View"),
+    document.getElementById("game2View"),
+    document.getElementById("summaryView")
+  ];
   views.forEach(v => {
     if (v) {
       v.classList.add("hidden");
@@ -1451,10 +1467,7 @@ window.onload = () => {
   if (navUserName) navUserName.textContent = currentUser.name || "Candidate";
   if (navUserEmail) navUserEmail.textContent = currentUser.email || "guest@accenture.prep";
 
-  hideAllViews();
-  if (dashboardView) dashboardView.classList.remove("hidden");
-  if (navUserSection) navUserSection.classList.remove("hidden");
-
+  goToDashboard();
   fetchAttempts();
   fetchLeaderboard();
 };
