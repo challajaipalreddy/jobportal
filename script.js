@@ -386,9 +386,17 @@ document.addEventListener("click", (e) => {
   const backBtn = e.target.closest(".back-to-dashboard-btn");
   if (backBtn) {
     e.preventDefault();
+    if (g1State && g1State.timer) clearInterval(g1State.timer);
+    if (g2State && g2State.timer) clearInterval(g2State.timer);
+    if (!currentUser) {
+      loginUser({ name: "Candidate Guest", email: "guest@accenture.prep" });
+    }
     saveActiveGameState("dashboard");
     hideAllViews();
     if (dashboardView) dashboardView.classList.remove("hidden");
+    if (navUserSection) navUserSection.classList.remove("hidden");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    showToast("Returned to Dashboard Home");
     return;
   }
 
