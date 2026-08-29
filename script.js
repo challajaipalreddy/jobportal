@@ -1,6 +1,8 @@
 // Accenture Gamified Cognitive Assessment Portal 2026 Engine (Clean & Optimized)
 
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = window.location.origin.includes("localhost") 
+  ? "http://localhost:3000/api" 
+  : `${window.location.origin}/api`;
 
 // --- STATE MANAGEMENT ---
 let currentUser = null;
