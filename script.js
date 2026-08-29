@@ -366,22 +366,35 @@ if (navSoundBtn) {
   };
 }
 
+function goToDashboard() {
+  if (typeof g1State !== 'undefined' && g1State && g1State.timer) clearInterval(g1State.timer);
+  if (typeof g2State !== 'undefined' && g2State && g2State.timer) clearInterval(g2State.timer);
+
+  if (!currentUser) {
+    currentUser = { name: "Candidate", email: "guest@accenture.prep" };
+  }
+
+  hideAllViews();
+
+  if (dashboardView) {
+    dashboardView.classList.remove("hidden");
+    dashboardView.style.display = "block";
+  }
+  if (navUserSection) {
+    navUserSection.classList.remove("hidden");
+    navUserSection.style.display = "flex";
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  showToast("Returned to Dashboard");
+}
+
 // DIRECT GAME LAUNCHERS & BACK TO DASHBOARD NAVIGATION
 document.addEventListener("click", (e) => {
-  const backBtn = e.target.closest(".back-to-dashboard-btn");
+  const backBtn = e.target.closest("#backToDashboardBtn, .back-to-dashboard-btn");
   if (backBtn) {
     e.preventDefault();
-    if (g1State && g1State.timer) clearInterval(g1State.timer);
-    if (g2State && g2State.timer) clearInterval(g2State.timer);
-    if (!currentUser) {
-      loginUser({ name: "Candidate Guest", email: "guest@accenture.prep" });
-    }
-    saveActiveGameState("dashboard");
-    hideAllViews();
-    if (dashboardView) dashboardView.classList.remove("hidden");
-    if (navUserSection) navUserSection.classList.remove("hidden");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    showToast("Returned to Dashboard Home");
+    goToDashboard();
     return;
   }
 
@@ -514,9 +527,11 @@ if (g1NextExampleBtn) {
 }
 
 function startGame1() {
-  saveActiveGameState("game1");
   hideAllViews();
-  if (game1View) game1View.classList.remove("hidden");
+  if (game1View) {
+    game1View.classList.remove("hidden");
+    game1View.style.display = "block";
+  }
   
   variantTabs.forEach((t, i) => {
     if (i === g1State.variantId - 1) t.classList.add("active");
@@ -1051,11 +1066,13 @@ if (g2NextExampleBtn) {
 }
 
 function startGame2() {
-  saveActiveGameState("game2");
   g2State.setId = 1;
   g2State.qIndex = 0; g2State.score = 0; g2State.correctCount = 0;
   hideAllViews();
-  if (game2View) game2View.classList.remove("hidden");
+  if (game2View) {
+    game2View.classList.remove("hidden");
+    game2View.style.display = "block";
+  }
 
   g2VariantTabs.forEach((t, i) => {
     if (i === 0) t.classList.add("active");
@@ -1401,11 +1418,13 @@ if (returnDashboardBtn) {
 }
 
 function hideAllViews() {
-  if (authView) authView.classList.add("hidden");
-  if (dashboardView) dashboardView.classList.add("hidden");
-  if (game1View) game1View.classList.add("hidden");
-  if (game2View) game2View.classList.add("hidden");
-  if (summaryView) summaryView.classList.add("hidden");
+  const views = [authView, dashboardView, game1View, game2View, summaryView];
+  views.forEach(v => {
+    if (v) {
+      v.classList.add("hidden");
+      v.style.display = "none";
+    }
+  });
 }
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }

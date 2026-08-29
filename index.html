@@ -27,11 +27,11 @@
           <span class="brand-title">Accenture Prep</span>
           <span class="brand-badge">Full-Stack Portal 2026</span>
         </div>
-        <button class="btn btn-sm btn-primary back-to-dashboard-btn" style="margin-left: 12px; font-weight:700;">🏠 Home</button>
       </div>
 
       <div id="navUserSection" class="nav-user">
-        <button class="btn btn-sm btn-outline back-to-dashboard-btn" style="border-color:#6366f1; color:#a5b4fc;">🏠 Home / Dashboard</button>
+        <!-- SINGLE UNIFIED BACK TO DASHBOARD BUTTON -->
+        <button id="backToDashboardBtn" class="btn btn-sm btn-outline" style="border-color:#6366f1; color:#a5b4fc; font-weight:700;">← Back to Dashboard</button>
         <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" rel="noopener" class="btn-whatsapp">
           💬 Join WhatsApp Channel
         </a>
@@ -215,12 +215,11 @@
 
     </section>
 
-    <!-- GAME 1 CONTAINER: MEMORY MAZE (12 LEVEL TABS & INFINITE EXAMPLES) -->
+    <!-- GAME 1 CONTAINER: MEMORY MAZE (12 LEVEL TABS) -->
     <section id="game1View" class="view-section hidden">
       
-      <!-- VARIANT SELECTOR TABS (12 LEVEL TABS + BACK TO DASHBOARD BUTTON) -->
+      <!-- VARIANT SELECTOR TABS (12 LEVEL TABS) -->
       <div class="variant-tabs-bar">
-        <button class="btn btn-sm btn-outline back-to-dashboard-btn" style="border-color:#6366f1; color:#a5b4fc; margin-right: 12px;">← Back to Dashboard</button>
         <button class="variant-tab active" data-var="1">Lvl 1 (Easy 3x3)</button>
         <button class="variant-tab" data-var="2">Lvl 2 (Easy Peek)</button>
         <button class="variant-tab" data-var="3">Lvl 3 (Med 4x4)</button>
@@ -286,9 +285,8 @@
     <!-- GAME 2 CONTAINER: SELECT BUBBLES (SIDE-BY-SIDE LAYOUT) -->
     <section id="game2View" class="view-section hidden">
       
-      <!-- GAME 2 CATEGORY TABS (20 EASY & 20 MEDIUM + BACK TO DASHBOARD BUTTON) -->
+      <!-- GAME 2 CATEGORY TABS (20 EASY & 20 MEDIUM) -->
       <div class="variant-tabs-bar">
-        <button class="btn btn-sm btn-outline back-to-dashboard-btn" style="border-color:#6366f1; color:#a5b4fc; margin-right: 12px;">← Back to Dashboard</button>
         <button class="g2-variant-tab active" data-set="1">Easy (20 Questions)</button>
         <button class="g2-variant-tab" data-set="2">Medium (20 Questions)</button>
       </div>
@@ -388,7 +386,7 @@
 
         <div class="summary-actions">
           <button id="nextModuleBtn" class="btn btn-primary btn-lg">Proceed to Next Game →</button>
-          <button id="returnDashboardBtn" class="btn btn-ghost back-to-dashboard-btn">Return to Dashboard</button>
+          <button id="returnDashboardBtn" class="btn btn-ghost">Return to Dashboard</button>
         </div>
       </div>
     </section>
