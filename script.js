@@ -1,10 +1,10 @@
-// Accenture Gamified Cognitive Assessment Portal 2026 Engine (Full-Stack Integrated & Enhanced)
+// Accenture Gamified Cognitive Assessment Portal 2026 Engine (Clean & Optimized)
 
 const API_BASE = "http://localhost:3000/api";
 
 // --- STATE MANAGEMENT ---
 let currentUser = null;
-let activeGame = null; // 1, 2, or 3
+let activeGame = null; // 1 or 2
 let isSeriesMode = false;
 let soundEnabled = true;
 
@@ -55,10 +55,10 @@ function playSound(type) {
       osc.start(now); osc.stop(now + 0.1);
     } else if (type === 'win') {
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(523, now);       // C5
-      osc.frequency.setValueAtTime(659, now + 0.1);  // E5
-      osc.frequency.setValueAtTime(783, now + 0.2);  // G5
-      osc.frequency.setValueAtTime(1046, now + 0.3); // C6
+      osc.frequency.setValueAtTime(523, now);
+      osc.frequency.setValueAtTime(659, now + 0.1);
+      osc.frequency.setValueAtTime(783, now + 0.2);
+      osc.frequency.setValueAtTime(1046, now + 0.3);
       gain.gain.setValueAtTime(0.3, now);
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
       osc.start(now); osc.stop(now + 0.6);
@@ -71,6 +71,7 @@ function playSound(type) {
 // Toast Notification Helper
 function showToast(msg) {
   const t = document.getElementById("toast");
+  if (!t) return;
   t.textContent = msg;
   t.classList.remove("hidden");
   setTimeout(() => t.classList.add("hidden"), 2500);
@@ -82,8 +83,7 @@ function saveActiveGameState(viewName) {
     activeView: viewName,
     g1VariantId: g1State ? g1State.variantId : 1,
     g2SetId: g2State ? g2State.setId : 1,
-    g2QIndex: g2State ? g2State.qIndex : 0,
-    g3Level: g3State ? g3State.level : 1
+    g2QIndex: g2State ? g2State.qIndex : 0
   };
   localStorage.setItem("accenture_active_session_state", JSON.stringify(state));
 }
@@ -100,9 +100,9 @@ function restoreActiveGameState() {
       g2State.setId = s.g2SetId || 1;
       g2State.qIndex = s.g2QIndex || 0;
       startGame2();
-    } else if (s.activeView === "game3") {
-      g3State.level = s.g3Level || 1;
-      startGame3();
+    } else {
+      hideAllViews();
+      if (dashboardView) dashboardView.classList.remove("hidden");
     }
   } catch (e) {
     console.log("Error restoring state", e);
@@ -131,134 +131,146 @@ const tabContentHistory = document.getElementById("tabContentHistory");
 const tabContentLeaderboard = document.getElementById("tabContentLeaderboard");
 
 // Dashboard tab switching
-dashTabHistory.onclick = () => {
-  dashTabHistory.classList.add("active");
-  dashTabLeaderboard.classList.remove("active");
-  tabContentHistory.classList.remove("hidden");
-  tabContentLeaderboard.classList.add("hidden");
-};
+if (dashTabHistory && dashTabLeaderboard) {
+  dashTabHistory.onclick = () => {
+    dashTabHistory.classList.add("active");
+    dashTabLeaderboard.classList.remove("active");
+    tabContentHistory.classList.remove("hidden");
+    tabContentLeaderboard.classList.add("hidden");
+  };
 
-dashTabLeaderboard.onclick = () => {
-  dashTabLeaderboard.classList.add("active");
-  dashTabHistory.classList.remove("active");
-  tabContentLeaderboard.classList.remove("hidden");
-  tabContentHistory.classList.add("hidden");
-  fetchLeaderboard();
-};
+  dashTabLeaderboard.onclick = () => {
+    dashTabLeaderboard.classList.add("active");
+    dashTabHistory.classList.remove("active");
+    tabContentLeaderboard.classList.remove("hidden");
+    tabContentHistory.classList.add("hidden");
+    fetchLeaderboard();
+  };
+}
 
-tabLoginBtn.onclick = () => {
-  tabLoginBtn.classList.add("active");
-  tabSignupBtn.classList.remove("active");
-  loginForm.classList.remove("hidden");
-  signupForm.classList.add("hidden");
-};
+if (tabLoginBtn && tabSignupBtn) {
+  tabLoginBtn.onclick = () => {
+    tabLoginBtn.classList.add("active");
+    tabSignupBtn.classList.remove("active");
+    loginForm.classList.remove("hidden");
+    signupForm.classList.add("hidden");
+  };
 
-tabSignupBtn.onclick = () => {
-  tabSignupBtn.classList.add("active");
-  tabLoginBtn.classList.remove("active");
-  signupForm.classList.remove("hidden");
-  loginForm.classList.add("hidden");
-};
+  tabSignupBtn.onclick = () => {
+    tabSignupBtn.classList.add("active");
+    tabLoginBtn.classList.remove("active");
+    signupForm.classList.remove("hidden");
+    loginForm.classList.add("hidden");
+  };
+}
 
-// STRICT SIGNUP HANDLER
-signupForm.onsubmit = async (e) => {
-  e.preventDefault();
-  const name = document.getElementById("signupName").value.trim();
-  const email = document.getElementById("signupEmail").value.trim();
-  const password = document.getElementById("signupPassword").value;
+// SIGNUP HANDLER
+if (signupForm) {
+  signupForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("signupName").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
 
-  try {
-    const res = await fetch(`${API_BASE}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      showToast("Account created successfully! Logging in...");
-      localStorage.setItem(`user_${email}`, JSON.stringify({ name, email, password, attempts: [] }));
-      localStorage.setItem("current_user_email", email);
-      loginUser({ name, email, attempts: [] });
-    } else {
-      showToast(data.error || "Registration failed.");
+    const userObj = { name, email, password, attempts: [] };
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Account created successfully! Logging in...");
+        loginUser(userObj);
+      } else {
+        showToast(data.error || "Registration failed.");
+      }
+    } catch (err) {
+      showToast("Account created! Logging in...");
+      loginUser(userObj);
     }
-  } catch (err) {
-    const user = { name, email, password, attempts: [] };
-    localStorage.setItem(`user_${email}`, JSON.stringify(user));
-    localStorage.setItem("current_user_email", email);
-    showToast("Account created! Logging in...");
-    loginUser(user);
-  }
-};
+  };
+}
 
-// STRICT LOGIN HANDLER
-loginForm.onsubmit = async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value;
+// LOGIN HANDLER
+if (loginForm) {
+  loginForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
-  try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      localStorage.setItem("current_user_email", email);
-      loginUser(data.user);
-      return;
-    } else {
-      showToast(data.error || "Invalid login credentials");
-      return;
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        loginUser({ name: data.user.name, email: data.user.email, password });
+        return;
+      } else {
+        showToast(data.error || "Invalid login credentials");
+        return;
+      }
+    } catch (err) {
+      console.log("Using local offline auth check");
     }
-  } catch (err) {
-    console.log("Using local offline auth check");
-  }
 
-  const stored = localStorage.getItem(`user_${email}`);
-  if (stored) {
-    const user = JSON.parse(stored);
-    if (user.password === password) {
-      localStorage.setItem("current_user_email", email);
-      loginUser(user);
+    const stored = localStorage.getItem(`user_${email}`);
+    if (stored) {
+      const user = JSON.parse(stored);
+      if (user.password === password) {
+        loginUser(user);
+      } else {
+        showToast("Incorrect password! Please try again.");
+      }
     } else {
-      showToast("Incorrect password! Please try again.");
+      showToast("Account not found! You must Sign Up first.");
     }
-  } else {
-    showToast("Account not found! You must Sign Up first.");
-  }
-};
+  };
+}
 
+// LOGIN USER & GUARANTEE LOCAL STORAGE PERSISTENCE ACROSS REFRESHES
 function loginUser(user) {
+  if (!user || !user.email) return;
   currentUser = user;
-  navUserName.textContent = user.name;
-  navUserEmail.textContent = user.email;
 
-  authView.classList.add("hidden");
-  dashboardView.classList.remove("hidden");
-  navUserSection.classList.remove("hidden");
+  // Persist session in LocalStorage so refresh NEVER boots user out
+  localStorage.setItem("current_user_email", user.email);
+  localStorage.setItem(`user_${user.email}`, JSON.stringify(user));
+
+  if (navUserName) navUserName.textContent = user.name || user.email.split('@')[0];
+  if (navUserEmail) navUserEmail.textContent = user.email;
+
+  if (authView) authView.classList.add("hidden");
+  if (dashboardView) dashboardView.classList.remove("hidden");
+  if (navUserSection) navUserSection.classList.remove("hidden");
   
   fetchAttempts();
   fetchLeaderboard();
   fetchStats();
 }
 
-logoutBtn.onclick = () => {
-  currentUser = null;
-  localStorage.removeItem("current_user_email");
-  localStorage.removeItem("accenture_active_session_state");
-  dashboardView.classList.add("hidden");
-  navUserSection.classList.add("hidden");
-  authView.classList.remove("hidden");
-  showToast("Logged out successfully.");
-};
+if (logoutBtn) {
+  logoutBtn.onclick = () => {
+    currentUser = null;
+    localStorage.removeItem("current_user_email");
+    localStorage.removeItem("accenture_active_session_state");
+    if (dashboardView) dashboardView.classList.add("hidden");
+    if (navUserSection) navUserSection.classList.add("hidden");
+    if (authView) authView.classList.remove("hidden");
+    showToast("Logged out successfully.");
+  };
+}
 
 async function saveUserAttempt(gameName, score, accuracy, timeSpent) {
   if (!currentUser) return;
   const record = {
     email: currentUser.email,
-    name: currentUser.name,
+    name: currentUser.name || currentUser.email.split('@')[0],
     game: gameName,
     score,
     accuracy: accuracy + "%",
@@ -293,6 +305,7 @@ async function fetchAttempts() {
 }
 
 function renderHistoryTable(attempts) {
+  if (!attemptHistoryBody) return;
   if (!attempts || attempts.length === 0) {
     attemptHistoryBody.innerHTML = `<tr><td colspan="5" class="empty-msg">No past assessment attempts recorded yet. Start practicing above!</td></tr>`;
     return;
@@ -318,15 +331,16 @@ async function fetchLeaderboard() {
     renderLeaderboardTable(data.leaderboard);
   } catch (err) {
     const seed = [
-      { name: "Rahul Sharma", totalScore: 780, gamesCompleted: 3, accuracy: "94%", percentile: 99 },
-      { name: "Ananya Verma", totalScore: 740, gamesCompleted: 3, accuracy: "91%", percentile: 97 },
-      { name: "Priya Nair", totalScore: 690, gamesCompleted: 3, accuracy: "88%", percentile: 94 }
+      { name: "Rahul Sharma", totalScore: 780, gamesCompleted: 2, accuracy: "94%", percentile: 99 },
+      { name: "Ananya Verma", totalScore: 740, gamesCompleted: 2, accuracy: "91%", percentile: 97 },
+      { name: "Priya Nair", totalScore: 690, gamesCompleted: 2, accuracy: "88%", percentile: 94 }
     ];
     renderLeaderboardTable(seed);
   }
 }
 
 function renderLeaderboardTable(list) {
+  if (!leaderboardBody) return;
   if (!list || list.length === 0) return;
   leaderboardBody.innerHTML = "";
   list.forEach((item, index) => {
@@ -336,7 +350,7 @@ function renderLeaderboardTable(list) {
         <td><span class="rank-badge ${rankClass}">${index + 1}</span></td>
         <td><strong>${item.name}</strong></td>
         <td><span style="color:var(--accent-gold); font-weight:bold;">${item.totalScore} pts</span></td>
-        <td>${item.gamesCompleted || 3}</td>
+        <td>${item.gamesCompleted || 2}</td>
         <td>${item.accuracy}</td>
         <td><span style="color:var(--accent-mint); font-weight:bold;">Top ${100 - (item.percentile || 95)}%</span></td>
       </tr>
@@ -348,37 +362,40 @@ async function fetchStats() {
   try {
     const res = await fetch(`${API_BASE}/stats`);
     const data = await res.json();
-    document.getElementById("platTotalUsers").textContent = data.totalUsers.toLocaleString();
-    document.getElementById("platTotalAttempts").textContent = data.totalAttempts.toLocaleString();
-    document.getElementById("platTopScore").textContent = `${data.topScore} pts`;
+    const uEl = document.getElementById("platTotalUsers");
+    const aEl = document.getElementById("platTotalAttempts");
+    const sEl = document.getElementById("platTopScore");
+    if (uEl) uEl.textContent = data.totalUsers.toLocaleString();
+    if (aEl) aEl.textContent = data.totalAttempts.toLocaleString();
+    if (sEl) sEl.textContent = `${data.topScore} pts`;
   } catch (e) {}
 }
 
-// Sound toggle
-navSoundBtn.onclick = () => {
-  soundEnabled = !soundEnabled;
-  navSoundBtn.textContent = soundEnabled ? "🔊" : "🔇";
-  showToast(soundEnabled ? "Audio Enabled" : "Audio Muted");
-};
-
-// --- DIRECT GAME LAUNCHERS ---
-const startAllGamesBtn = document.getElementById("startAllGamesBtn");
-const startGameBtns = document.querySelectorAll(".start-game-btn");
-
-startGameBtns.forEach(btn => {
-  btn.onclick = (e) => {
-    e.preventDefault();
-    const gNum = parseInt(btn.dataset.game, 10);
-    launchDirectGame(gNum, false);
-  };
-});
-
-if (startAllGamesBtn) {
-  startAllGamesBtn.onclick = (e) => {
-    e.preventDefault();
-    launchDirectGame(1, true);
+if (navSoundBtn) {
+  navSoundBtn.onclick = () => {
+    soundEnabled = !soundEnabled;
+    navSoundBtn.textContent = soundEnabled ? "🔊" : "🔇";
+    showToast(soundEnabled ? "Audio Enabled" : "Audio Muted");
   };
 }
+
+// DIRECT GAME LAUNCHERS WITH DELEGATION (RELIABLE & BUG-FREE)
+document.addEventListener("click", (e) => {
+  const startBtn = e.target.closest(".start-game-btn");
+  if (startBtn) {
+    e.preventDefault();
+    const gNum = parseInt(startBtn.dataset.game, 10);
+    launchDirectGame(gNum, false);
+    return;
+  }
+
+  const allGamesBtn = e.target.closest("#startAllGamesBtn");
+  if (allGamesBtn) {
+    e.preventDefault();
+    launchDirectGame(1, true);
+    return;
+  }
+});
 
 function launchDirectGame(gameNum, series) {
   activeGame = gameNum;
@@ -386,7 +403,6 @@ function launchDirectGame(gameNum, series) {
 
   if (gameNum === 1) startGame1();
   else if (gameNum === 2) startGame2();
-  else if (gameNum === 3) startGame3();
 }
 
 // --- GAME 1 ENGINE: ACCENTURE MEMORY MAZE ---
@@ -399,7 +415,7 @@ const g1AttemptsCount = document.getElementById("g1AttemptsCount");
 const g1NextExampleBtn = document.getElementById("g1NextExampleBtn");
 const variantTabs = document.querySelectorAll(".variant-tab");
 
-// In-Grid Carousel Modal Elements
+// Carousel Modal Elements
 const g1CarouselModal = document.getElementById("g1CarouselModal");
 const carouselText = document.getElementById("carouselText");
 const carouselPrevBtn = document.getElementById("carouselPrevBtn");
@@ -419,6 +435,7 @@ const carouselSlides = [
 let carouselIndex = 0;
 
 function updateCarousel() {
+  if (!carouselText) return;
   carouselText.textContent = carouselSlides[carouselIndex];
   
   carouselDots.forEach((dot, idx) => {
@@ -438,24 +455,26 @@ function updateCarousel() {
   }
 }
 
-carouselPrevBtn.onclick = () => {
-  if (carouselIndex > 0) {
-    carouselIndex--;
-    updateCarousel();
-  }
-};
+if (carouselPrevBtn && carouselNextBtn && carouselStartBtn) {
+  carouselPrevBtn.onclick = () => {
+    if (carouselIndex > 0) {
+      carouselIndex--;
+      updateCarousel();
+    }
+  };
 
-carouselNextBtn.onclick = () => {
-  if (carouselIndex < carouselSlides.length - 1) {
-    carouselIndex++;
-    updateCarousel();
-  }
-};
+  carouselNextBtn.onclick = () => {
+    if (carouselIndex < carouselSlides.length - 1) {
+      carouselIndex++;
+      updateCarousel();
+    }
+  };
 
-carouselStartBtn.onclick = () => {
-  g1CarouselModal.classList.add("hidden");
-  startG1Timer();
-};
+  carouselStartBtn.onclick = () => {
+    if (g1CarouselModal) g1CarouselModal.classList.add("hidden");
+    startG1Timer();
+  };
+}
 
 let g1State = {
   variantId: 1,
@@ -489,19 +508,19 @@ if (g1NextExampleBtn) {
 function startGame1() {
   saveActiveGameState("game1");
   hideAllViews();
-  game1View.classList.remove("hidden");
+  if (game1View) game1View.classList.remove("hidden");
   
   variantTabs.forEach((t, i) => {
     if (i === g1State.variantId - 1) t.classList.add("active");
     else t.classList.remove("active");
   });
 
-  if (!g1State.instructionsShown) {
+  if (!g1State.instructionsShown && g1CarouselModal) {
     carouselIndex = 0;
     updateCarousel();
     g1CarouselModal.classList.remove("hidden");
     g1State.instructionsShown = true;
-  } else {
+  } else if (g1CarouselModal) {
     g1CarouselModal.classList.add("hidden");
   }
 
@@ -528,9 +547,9 @@ function loadG1Question() {
   else if (v === 11) { g1State.rows = 7; g1State.cols = 7; g1State.keysNeeded = 2; }
   else if (v === 12) { g1State.rows = 7; g1State.cols = 7; g1State.keysNeeded = 3; }
 
-  g1Grid.className = `accenture-grid grid-${g1State.rows}x${g1State.cols}`;
-  g1KeysLabel.textContent = `${g1State.keysNeeded} KEY${g1State.keysNeeded > 1 ? 'S' : ''}`;
-  g1AttemptsCount.textContent = g1State.attempts;
+  if (g1Grid) g1Grid.className = `accenture-grid grid-${g1State.rows}x${g1State.cols}`;
+  if (g1KeysLabel) g1KeysLabel.textContent = `${g1State.keysNeeded} KEY${g1State.keysNeeded > 1 ? 'S' : ''}`;
+  if (g1AttemptsCount) g1AttemptsCount.textContent = g1State.attempts;
   if (g1MovesCount) g1MovesCount.textContent = g1State.movesCount;
 
   g1State.startPos = g1State.rows === 3 ? { r: 1, c: 1 } : { r: 0, c: 0 };
@@ -545,9 +564,9 @@ function loadG1Question() {
   buildG1SolvableMaze();
 
   g1State.timeLeft = 240;
-  g1Timer.textContent = formatTime(g1State.timeLeft);
+  if (g1Timer) g1Timer.textContent = formatTime(g1State.timeLeft);
   
-  if (g1CarouselModal.classList.contains("hidden")) {
+  if (g1CarouselModal && g1CarouselModal.classList.contains("hidden")) {
     startG1Timer();
   }
 
@@ -558,7 +577,7 @@ function startG1Timer() {
   clearInterval(g1State.timer);
   g1State.timer = setInterval(() => {
     g1State.timeLeft--;
-    g1Timer.textContent = formatTime(g1State.timeLeft);
+    if (g1Timer) g1Timer.textContent = formatTime(g1State.timeLeft);
     if (g1State.timeLeft <= 0) {
       clearInterval(g1State.timer);
       finishG1Question(false);
@@ -576,6 +595,7 @@ function startG1Timer() {
 }
 
 function highlightPeekWalls(show) {
+  if (!g1Grid) return;
   const all = g1Grid.children;
   const R = g1State.rows, C = g1State.cols;
 
@@ -669,13 +689,15 @@ function buildG1SolvableMaze() {
     g1State.passages = passages;
   }
 
-  g1Grid.innerHTML = "";
-  for (let r = 0; r < R; r++) {
-    for (let c = 0; c < C; c++) {
-      const d = document.createElement("div");
-      d.className = "cell";
-      d.onclick = () => attemptG1CellClick(r, c);
-      g1Grid.appendChild(d);
+  if (g1Grid) {
+    g1Grid.innerHTML = "";
+    for (let r = 0; r < R; r++) {
+      for (let c = 0; c < C; c++) {
+        const d = document.createElement("div");
+        d.className = "cell";
+        d.onclick = () => attemptG1CellClick(r, c);
+        g1Grid.appendChild(d);
+      }
     }
   }
 }
@@ -769,6 +791,7 @@ function placeG1Keys() {
 }
 
 function renderG1Grid() {
+  if (!g1Grid) return;
   const C = g1State.cols, R = g1State.rows;
   const all = g1Grid.children;
   for (let i = 0; i < all.length; i++) {
@@ -825,7 +848,7 @@ function attemptG1CellClick(tr, tc) {
 }
 
 function attemptG1Move(tr, tc) {
-  if (!g1CarouselModal.classList.contains("hidden")) return false;
+  if (g1CarouselModal && !g1CarouselModal.classList.contains("hidden")) return false;
 
   const C = g1State.cols;
   const pr = g1State.player.r, pc = g1State.player.c;
@@ -857,7 +880,7 @@ function attemptG1Move(tr, tc) {
 
     g1State.attempts++;
     g1State.movesCount = 0;
-    g1AttemptsCount.textContent = g1State.attempts;
+    if (g1AttemptsCount) g1AttemptsCount.textContent = g1State.attempts;
     if (g1MovesCount) g1MovesCount.textContent = g1State.movesCount;
 
     g1State.player = { ...g1State.startPos };
@@ -872,7 +895,9 @@ function attemptG1Move(tr, tc) {
   }
 
   playSound('step');
-  g1Grid.children[pr * C + pc].classList.add("path");
+  if (g1Grid && g1Grid.children[pr * C + pc]) {
+    g1Grid.children[pr * C + pc].classList.add("path");
+  }
   g1State.player = { r: tr, c: tc };
 
   g1State.movesCount++;
@@ -893,7 +918,7 @@ function attemptG1Move(tr, tc) {
     playSound('win');
     showToast(`🎉 Door Unlocked in ${g1State.movesCount} moves!`);
     
-    const doorCellEl = g1Grid.children[tr * C + tc];
+    const doorCellEl = g1Grid ? g1Grid.children[tr * C + tc] : null;
     if (doorCellEl) {
       doorCellEl.classList.add("win-cell");
     }
@@ -952,6 +977,7 @@ const g2CarouselSlides = [
 let g2CarouselIdx = 0;
 
 function updateG2Carousel() {
+  if (!g2CarouselText) return;
   g2CarouselText.textContent = g2CarouselSlides[g2CarouselIdx];
   
   g2CarouselDots.forEach((dot, idx) => {
@@ -971,24 +997,26 @@ function updateG2Carousel() {
   }
 }
 
-g2CarouselPrevBtn.onclick = () => {
-  if (g2CarouselIdx > 0) {
-    g2CarouselIdx--;
-    updateG2Carousel();
-  }
-};
+if (g2CarouselPrevBtn && g2CarouselNextBtn && g2CarouselStartBtn) {
+  g2CarouselPrevBtn.onclick = () => {
+    if (g2CarouselIdx > 0) {
+      g2CarouselIdx--;
+      updateG2Carousel();
+    }
+  };
 
-g2CarouselNextBtn.onclick = () => {
-  if (g2CarouselIdx < g2CarouselSlides.length - 1) {
-    g2CarouselIdx++;
-    updateG2Carousel();
-  }
-};
+  g2CarouselNextBtn.onclick = () => {
+    if (g2CarouselIdx < g2CarouselSlides.length - 1) {
+      g2CarouselIdx++;
+      updateG2Carousel();
+    }
+  };
 
-g2CarouselStartBtn.onclick = () => {
-  g2CarouselModal.classList.add("hidden");
-  startG2Timer();
-};
+  g2CarouselStartBtn.onclick = () => {
+    if (g2CarouselModal) g2CarouselModal.classList.add("hidden");
+    startG2Timer();
+  };
+}
 
 let g2State = {
   setId: 1,
@@ -1019,19 +1047,19 @@ function startGame2() {
   g2State.setId = 1;
   g2State.qIndex = 0; g2State.score = 0; g2State.correctCount = 0;
   hideAllViews();
-  game2View.classList.remove("hidden");
+  if (game2View) game2View.classList.remove("hidden");
 
   g2VariantTabs.forEach((t, i) => {
     if (i === 0) t.classList.add("active");
     else t.classList.remove("active");
   });
 
-  if (!g2State.instructionsShown) {
+  if (!g2State.instructionsShown && g2CarouselModal) {
     g2CarouselIdx = 0;
     updateG2Carousel();
     g2CarouselModal.classList.remove("hidden");
     g2State.instructionsShown = true;
-  } else {
+  } else if (g2CarouselModal) {
     g2CarouselModal.classList.add("hidden");
   }
 
@@ -1043,9 +1071,9 @@ function loadG2Question() {
   const isEasy = g2State.qIndex < 20;
   const qNum = isEasy ? (g2State.qIndex + 1) : (g2State.qIndex - 19);
   const tagText = isEasy ? `Easy: Q ${qNum} / 20` : `Medium: Q ${qNum} / 20`;
-  g2LevelTag.textContent = tagText;
-  g2Score.textContent = g2State.score;
-  g2FeedbackLine.textContent = "";
+  if (g2LevelTag) g2LevelTag.textContent = tagText;
+  if (g2Score) g2Score.textContent = g2State.score;
+  if (g2FeedbackLine) g2FeedbackLine.textContent = "";
 
   const q = generateG2MathQuestion(g2State.qIndex);
   g2State.current = q;
@@ -1064,9 +1092,9 @@ function loadG2Question() {
   renderG2Bubbles(q);
 
   g2State.timeLeft = 15;
-  g2Timer.textContent = g2State.timeLeft + "s";
+  if (g2Timer) g2Timer.textContent = g2State.timeLeft + "s";
 
-  if (g2CarouselModal.classList.contains("hidden")) {
+  if (g2CarouselModal && g2CarouselModal.classList.contains("hidden")) {
     startG2Timer();
   }
 }
@@ -1075,7 +1103,7 @@ function startG2Timer() {
   clearInterval(g2State.timer);
   g2State.timer = setInterval(() => {
     g2State.timeLeft--;
-    g2Timer.textContent = g2State.timeLeft + "s";
+    if (g2Timer) g2Timer.textContent = g2State.timeLeft + "s";
     if (g2State.timeLeft <= 0) {
       clearInterval(g2State.timer);
       evaluateG2Question();
@@ -1194,6 +1222,7 @@ function getNonOverlappingPositions(count, width, height, bubbleSize) {
 }
 
 function renderG2Bubbles(q) {
+  if (!bubblesPond) return;
   bubblesPond.innerHTML = "";
   const W = bubblesPond.clientWidth || 690;
   const H = bubblesPond.clientHeight || 480;
@@ -1216,7 +1245,7 @@ function renderG2Bubbles(q) {
 }
 
 function handleG2BubbleClick(idx, el) {
-  if (g2State.locked || !g2CarouselModal.classList.contains("hidden")) return;
+  if (g2State.locked || (g2CarouselModal && !g2CarouselModal.classList.contains("hidden"))) return;
 
   const clickedPos = g2State.clickedOrder.indexOf(idx);
 
@@ -1264,16 +1293,18 @@ function evaluateG2Question() {
     playSound('win');
     g2State.score += 10;
     g2State.correctCount++;
-    g2Score.textContent = g2State.score;
-    g2FeedbackLine.textContent = `🎉 Perfect Sequence! (${dirName}) +10 Points`;
-    g2FeedbackLine.className = "feedback-text ok";
-  } else {
+    if (g2Score) g2Score.textContent = g2State.score;
+    if (g2FeedbackLine) {
+      g2FeedbackLine.textContent = `🎉 Perfect Sequence! (${dirName}) +10 Points`;
+      g2FeedbackLine.className = "feedback-text ok";
+    }
+  } else if (g2FeedbackLine) {
     g2FeedbackLine.textContent = `Sequence Inaccurate! (Target was ${dirName})`;
     g2FeedbackLine.className = "feedback-text bad";
   }
 
   g2State.current.correctOrder.forEach((bIdx, pos) => {
-    const el = bubblesPond.querySelector(`.bubble[data-idx="${bIdx}"]`);
+    const el = bubblesPond ? bubblesPond.querySelector(`.bubble[data-idx="${bIdx}"]`) : null;
     if (el) {
       el.classList.add(isAllCorrect ? "correct-pick" : "reveal-correct");
       let tag = el.querySelector(".order-tag");
@@ -1297,519 +1328,10 @@ function evaluateG2Question() {
   }, 1800);
 }
 
-// --- GAME 3 ENGINE: PATH FINDING / ARROW MAZE (PROCEDURAL SOLVABLE & BFS SOLVER) ---
-const game3View = document.getElementById("game3View");
-const g3Grid = document.getElementById("g3Grid");
-const g3Timer = document.getElementById("g3Timer");
-const g3Score = document.getElementById("g3Score");
-const g3LevelTag = document.getElementById("g3LevelTag");
-const g3MovesCount = document.getElementById("g3MovesCount");
-const g3FeedbackLine = document.getElementById("g3FeedbackLine");
-const g3NextExampleBtn = document.getElementById("g3NextExampleBtn");
-
-const g3RotateLeftBtn = document.getElementById("g3RotateLeftBtn");
-const g3RotateRightBtn = document.getElementById("g3RotateRightBtn");
-const g3ResetBtn = document.getElementById("g3ResetBtn");
-const g3CheckBtn = document.getElementById("g3CheckBtn");
-
-const g3VariantTabs = document.querySelectorAll(".g3-variant-tab");
-
-// In-Grid Carousel Modal Elements
-const g3CarouselModal = document.getElementById("g3CarouselModal");
-const g3CarouselText = document.getElementById("g3CarouselText");
-const g3CarouselPrevBtn = document.getElementById("g3CarouselPrevBtn");
-const g3CarouselNextBtn = document.getElementById("g3CarouselNextBtn");
-const g3CarouselStartBtn = document.getElementById("g3CarouselStartBtn");
-const g3CarouselStartContainer = document.getElementById("g3CarouselStartContainer");
-const g3CarouselDots = document.querySelectorAll(".carousel-dots .g3-dot");
-
-const g3CarouselSlides = [
-  "In this exercise, you must navigate from START 🟢 to DOOR 🚪 by rotating directional arrow tiles.",
-  "Each arrow tile points in one of 8 directions (straight ↑ ↓ ← → or diagonal ↗ ↖ ↘ ↙).",
-  "Click any arrow tile to select it, then tap ↺ Rotate Left or ↻ Rotate Right to point the arrow toward the next step.",
-  "When your arrow path successfully connects START to DOOR, click ✓ Check Path!",
-  "Try to solve each level in the MINIMUM possible moves to achieve 100% efficiency. Press START to begin!"
-];
-
-let g3CarouselIdx = 0;
-
-function updateG3Carousel() {
-  g3CarouselText.textContent = g3CarouselSlides[g3CarouselIdx];
-  
-  g3CarouselDots.forEach((dot, idx) => {
-    if (idx === g3CarouselIdx) dot.classList.add("active");
-    else dot.classList.remove("active");
-  });
-
-  if (g3CarouselIdx === 0) g3CarouselPrevBtn.classList.add("disabled");
-  else g3CarouselPrevBtn.classList.remove("disabled");
-
-  if (g3CarouselIdx === g3CarouselSlides.length - 1) {
-    g3CarouselNextBtn.classList.add("disabled");
-    g3CarouselStartContainer.classList.remove("hidden");
-  } else {
-    g3CarouselNextBtn.classList.remove("disabled");
-    g3CarouselStartContainer.classList.add("hidden");
-  }
-}
-
-g3CarouselPrevBtn.onclick = () => {
-  if (g3CarouselIdx > 0) {
-    g3CarouselIdx--;
-    updateG3Carousel();
-  }
-};
-
-g3CarouselNextBtn.onclick = () => {
-  if (g3CarouselIdx < g3CarouselSlides.length - 1) {
-    g3CarouselIdx++;
-    updateG3Carousel();
-  }
-};
-
-g3CarouselStartBtn.onclick = () => {
-  g3CarouselModal.classList.add("hidden");
-  startG3Timer();
-};
-
-// 8 DIRECTIONAL VECTORS & SYMBOLS FOR ARROW TILES
-const G3_DIRECTIONS = [
-  { name: "UP", dr: -1, dc: 0, deg: 0, symbol: "↑" },
-  { name: "UP_RIGHT", dr: -1, dc: 1, deg: 45, symbol: "↗" },
-  { name: "RIGHT", dr: 0, dc: 1, deg: 90, symbol: "→" },
-  { name: "DOWN_RIGHT", dr: 1, dc: 1, deg: 135, symbol: "↘" },
-  { name: "DOWN", dr: 1, dc: 0, deg: 180, symbol: "↓" },
-  { name: "DOWN_LEFT", dr: 1, dc: -1, deg: 225, symbol: "↙" },
-  { name: "LEFT", dr: 0, dc: -1, deg: 270, symbol: "←" },
-  { name: "UP_LEFT", dr: -1, dc: -1, deg: 315, symbol: "↖" }
-];
-
-let g3State = {
-  level: 1, gridSize: 3,
-  startPos: { r: 0, c: 0 }, doorPos: { r: 2, c: 2 },
-  tiles: [], initialRotations: [], selectedTile: null,
-  movesCount: 0, minimumMoves: 0, score: 0,
-  timeLeft: 240, timer: null, instructionsShown: false,
-  locked: false
-};
-
-// Variant Level Tabs Listener (Level 1: 3x3, Lvl 2: 4x4, Lvl 3: 5x5, Lvl 4: 6x6, Lvl 5: 7x7)
-g3VariantTabs.forEach(tab => {
-  tab.onclick = () => {
-    g3VariantTabs.forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    g3State.level = parseInt(tab.dataset.level, 10);
-    saveActiveGameState("game3");
-    loadG3Question();
-  };
-});
-
-if (g3NextExampleBtn) {
-  g3NextExampleBtn.onclick = () => {
-    showToast("Generating New Arrow Maze Puzzle...");
-    loadG3Question();
-  };
-}
-
-function startGame3() {
-  saveActiveGameState("game3");
-  g3State.level = 1;
-  g3State.score = 0;
-  hideAllViews();
-  game3View.classList.remove("hidden");
-
-  g3VariantTabs.forEach((t, i) => {
-    if (i === 0) t.classList.add("active");
-    else t.classList.remove("active");
-  });
-
-  if (!g3State.instructionsShown) {
-    g3CarouselIdx = 0;
-    updateG3Carousel();
-    g3CarouselModal.classList.remove("hidden");
-    g3State.instructionsShown = true;
-  } else {
-    g3CarouselModal.classList.add("hidden");
-  }
-
-  loadG3Question();
-}
-
-function loadG3Question() {
-  saveActiveGameState("game3");
-  const lvl = g3State.level;
-  
-  // Level Block Config: Lvl 1: 3x3 blocks (9x9 cells), Lvl 2: 3x3 blocks, Lvl 3: 3x3 blocks, Lvl 4: 4x3 blocks, Lvl 5: 4x4 blocks
-  g3State.blockRows = lvl >= 5 ? 4 : 3;
-  g3State.blockCols = lvl >= 4 ? 4 : 3;
-
-  const totalR = g3State.blockRows * 3;
-  const totalC = g3State.blockCols * 3;
-  g3State.gridRows = totalR;
-  g3State.gridCols = totalC;
-
-  g3LevelTag.textContent = `Level ${lvl} (${totalR}x${totalC})`;
-  g3Score.textContent = g3State.score;
-  g3FeedbackLine.textContent = "";
-  g3State.movesCount = 0;
-  g3MovesCount.textContent = 0;
-  g3State.selectedTile = null;
-  g3State.locked = false;
-
-  g3State.startPos = { r: 0, c: 0 };
-  g3State.doorPos = { r: totalR - 1, c: totalC - 1 };
-
-  // Generate Solvable 3x3 Sub-grid Block Arrow Puzzle
-  generateG3SolvablePuzzle();
-
-  renderG3Grid();
-
-  g3State.timeLeft = 240;
-  g3Timer.textContent = formatTime(g3State.timeLeft);
-  if (g3CarouselModal.classList.contains("hidden")) {
-    startG3Timer();
-  }
-}
-
-function startG3Timer() {
-  clearInterval(g3State.timer);
-  g3State.timer = setInterval(() => {
-    g3State.timeLeft--;
-    g3Timer.textContent = formatTime(g3State.timeLeft);
-    if (g3State.timeLeft <= 0) {
-      clearInterval(g3State.timer);
-      showToast("Time's Up! Level Failed.");
-      g3FeedbackLine.textContent = "⏱️ Time's Up! Re-try level.";
-      g3FeedbackLine.className = "feedback-text bad";
-    }
-  }, 1000);
-}
-
-// GUARANTEED SOLVABLE ARROW PUZZLE GENERATOR FOR SUB-GRID BLOCKS
-function generateG3SolvablePuzzle() {
-  const R = g3State.gridRows;
-  const C = g3State.gridCols;
-  let solvable = false;
-  let attempts = 0;
-
-  while (!solvable && attempts < 300) {
-    attempts++;
-    
-    // Create Grid Template
-    const grid = Array.from({ length: R }, (_, r) =>
-      Array.from({ length: C }, (_, c) => ({
-        r, c,
-        type: (r === 0 && c === 0) ? "start" : (r === R - 1 && c === C - 1) ? "door" : "blank",
-        dirIndex: randInt(0, 7),
-        targetDirIndex: 0
-      }))
-    );
-
-    // Place Obstacles
-    const numObstacles = g3State.level === 1 ? 2 : g3State.level === 2 ? 4 : Math.min(10, g3State.level * 3);
-    let obsCount = 0;
-    while (obsCount < numObstacles) {
-      const or = randInt(0, R - 1), oc = randInt(0, C - 1);
-      if ((or !== 0 || oc !== 0) && (or !== R - 1 || oc !== C - 1) && grid[or][oc].type === "blank") {
-        grid[or][oc].type = "obstacle";
-        obsCount++;
-      }
-    }
-
-    // Build Solvable Path Sequence from (0,0) to (R-1, C-1)
-    const visited = new Set(["0,0"]);
-    let curr = { r: 0, c: 0 };
-    let pathSuccess = false;
-
-    for (let step = 0; step < R * C * 2; step++) {
-      if (curr.r === R - 1 && curr.c === C - 1) {
-        pathSuccess = true;
-        break;
-      }
-
-      // Pick valid 8-directional move toward door
-      const validMoves = [];
-      G3_DIRECTIONS.forEach((dir, dIdx) => {
-        const nr = curr.r + dir.dr, nc = curr.c + dir.dc;
-        if (nr >= 0 && nr < R && nc >= 0 && nc < C && !visited.has(`${nr},${nc}`) && grid[nr][nc].type !== "obstacle") {
-          const distToDoor = Math.hypot(R - 1 - nr, C - 1 - nc);
-          validMoves.push({ nr, nc, dIdx, distToDoor });
-        }
-      });
-
-      if (validMoves.length === 0) break;
-
-      // Sort moves favoring progression toward door
-      validMoves.sort((a, b) => a.distToDoor - b.distToDoor);
-      const chosen = validMoves[0];
-
-      grid[curr.r][curr.c].type = (curr.r === 0 && curr.c === 0) ? "start" : "arrow";
-      grid[curr.r][curr.c].targetDirIndex = chosen.dIdx;
-      curr = { r: chosen.nr, c: chosen.nc };
-      visited.add(`${curr.r},${curr.c}`);
-    }
-
-    if (pathSuccess) {
-      let minRotations = 0;
-      g3State.tiles = [];
-      g3State.initialRotations = [];
-
-      for (let r = 0; r < R; r++) {
-        const row = [];
-        for (let c = 0; c < C; c++) {
-          const cell = grid[r][c];
-          
-          if (cell.type === "blank" && Math.random() < 0.45) {
-            cell.type = "arrow";
-          }
-
-          const initDir = cell.type === "arrow" ? randInt(0, 7) : cell.targetDirIndex;
-          cell.dirIndex = initDir;
-
-          if (cell.type === "arrow" && visited.has(`${r},${c}`)) {
-            const rotDist = Math.min((cell.targetDirIndex - initDir + 8) % 8, (initDir - cell.targetDirIndex + 8) % 8);
-            minRotations += rotDist;
-          }
-
-          row.push(cell);
-          g3State.initialRotations.push({ r, c, dirIndex: initDir });
-        }
-        g3State.tiles.push(row);
-      }
-
-      g3State.minimumMoves = Math.max(1, minRotations);
-      solvable = true;
-    }
-  }
-
-  g3State.selectedTile = { r: 0, c: 0 };
-}
-
-// RENDER BOARD HOUSING 3x3 BLOCKS (MATCHING ACCENTURE / USER REFERENCE IMAGE)
-function renderG3Grid() {
-  const blockRows = g3State.blockRows || 3;
-  const blockCols = g3State.blockCols || 3;
-
-  g3Grid.className = "g3-arrow-board";
-  g3Grid.style.display = "grid";
-  g3Grid.style.gridTemplateColumns = `repeat(${blockCols}, 1fr)`;
-  g3Grid.style.gridTemplateRows = `repeat(${blockRows}, 1fr)`;
-  g3Grid.innerHTML = "";
-
-  const sel = g3State.selectedTile;
-
-  for (let br = 0; br < blockRows; br++) {
-    for (let bc = 0; bc < blockCols; bc++) {
-      const blockEl = document.createElement("div");
-      blockEl.className = "g3-block";
-
-      for (let subR = 0; subR < 3; subR++) {
-        for (let subC = 0; subC < 3; subC++) {
-          const r = br * 3 + subR;
-          const c = bc * 3 + subC;
-
-          const tile = g3State.tiles[r][c];
-          const cellEl = document.createElement("div");
-          cellEl.className = "g3-cell";
-
-          if (tile.type === "blank") cellEl.classList.add("blank");
-          else if (tile.type === "arrow") cellEl.classList.add("arrow");
-          else if (tile.type === "obstacle") cellEl.classList.add("obstacle");
-          else if (tile.type === "start") cellEl.classList.add("start-cell");
-          else if (tile.type === "door") cellEl.classList.add("door-cell");
-
-          if (sel && sel.r === r && sel.c === c) {
-            cellEl.classList.add("selected-cell");
-          }
-
-          // Inline Yellow Control Highlight on surrounding adjacent cells
-          if (sel && (sel.r !== r || sel.c !== c) && Math.abs(sel.r - r) <= 1 && Math.abs(sel.c - c) <= 1) {
-            cellEl.classList.add("control-highlight");
-          }
-
-          let content = "";
-          if (tile.type === "start") content += `<span class="g3-badge">START 🟢</span>`;
-          if (tile.type === "door") content += `<span class="g3-badge">DOOR 🚪</span>`;
-
-          if (tile.type === "arrow" || tile.type === "start") {
-            const dir = G3_DIRECTIONS[tile.dirIndex];
-            content += `
-              <svg class="g3-arrow-svg" style="transform: rotate(${dir.deg}deg);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                <path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            `;
-          }
-
-          cellEl.innerHTML = content;
-          cellEl.onclick = () => selectOrControlG3Tile(r, c);
-          blockEl.appendChild(cellEl);
-        }
-      }
-
-      g3Grid.appendChild(blockEl);
-    }
-  }
-}
-
-function selectOrControlG3Tile(r, c) {
-  if (g3State.locked || !g3CarouselModal.classList.contains("hidden")) return;
-  const sel = g3State.selectedTile;
-
-  // If clicking an adjacent cell highlighted in yellow control box, rotate selected tile to point towards (r, c)!
-  if (sel && (sel.r !== r || sel.c !== c) && Math.abs(sel.r - r) <= 1 && Math.abs(sel.c - c) <= 1) {
-    const dr = r - sel.r, dc = c - sel.c;
-    const targetDirIdx = G3_DIRECTIONS.findIndex(d => d.dr === dr && d.dc === dc);
-    if (targetDirIdx !== -1) {
-      playSound('step');
-      const tile = g3State.tiles[sel.r][sel.c];
-      tile.dirIndex = targetDirIdx;
-      g3State.movesCount++;
-      g3MovesCount.textContent = g3State.movesCount;
-      renderG3Grid();
-      return;
-    }
-  }
-
-  const tile = g3State.tiles[r][c];
-  if (tile.type === "obstacle") {
-    showToast("Obstacle cell cannot be selected!");
-    return;
-  }
-
-  playSound('step');
-  g3State.selectedTile = { r, c };
-  renderG3Grid();
-}
-
-function rotateG3Tile(delta) {
-  if (g3State.locked || !g3State.selectedTile) return;
-  const { r, c } = g3State.selectedTile;
-  const tile = g3State.tiles[r][c];
-  if (tile.type === "obstacle") return;
-
-  playSound('step');
-  tile.dirIndex = (tile.dirIndex + delta + 8) % 8;
-  g3State.movesCount++;
-  g3MovesCount.textContent = g3State.movesCount;
-
-  renderG3Grid();
-}
-
-// CONTROL TOOLBAR EVENT LISTENERS
-g3RotateLeftBtn.onclick = () => rotateG3Tile(-1);
-g3RotateRightBtn.onclick = () => rotateG3Tile(1);
-
-g3ResetBtn.onclick = () => {
-  playSound('unselect');
-  g3State.movesCount = 0;
-  g3MovesCount.textContent = 0;
-  g3State.initialRotations.forEach(item => {
-    g3State.tiles[item.r][item.c].dirIndex = item.dirIndex;
-  });
-  showToast("Puzzle Reset to Initial State");
-  renderG3Grid();
-};
-
-g3CheckBtn.onclick = () => checkG3Path();
-
-// REAL PATH VALIDATION ENGINE (VERIFIES CONTINUOUS ARROW CONNECTION START ➔ DOOR)
-function checkG3Path() {
-  if (g3State.locked) return;
-  const R = g3State.gridRows || 9;
-  const C = g3State.gridCols || 9;
-  const visited = new Set();
-  let curr = { r: 0, c: 0 };
-  let pathConnected = false;
-
-  document.querySelectorAll(".g3-cell").forEach(el => el.classList.remove("path-traced-cell"));
-
-  while (true) {
-    const key = `${curr.r},${curr.c}`;
-    if (visited.has(key)) {
-      showToast("❌ Loop Detected in Arrow Path!");
-      g3FeedbackLine.textContent = "❌ Loop Detected! Change arrow directions.";
-      g3FeedbackLine.className = "feedback-text bad";
-      break;
-    }
-    visited.add(key);
-
-    const blockR = Math.floor(curr.r / 3);
-    const blockC = Math.floor(curr.c / 3);
-    const subR = curr.r % 3;
-    const subC = curr.c % 3;
-    
-    const blockIdx = blockR * (g3State.blockCols || 3) + blockC;
-    const blockEl = g3Grid.children[blockIdx];
-    if (blockEl) {
-      const cellIdx = subR * 3 + subC;
-      const cellEl = blockEl.children[cellIdx];
-      if (cellEl) cellEl.classList.add("path-traced-cell");
-    }
-
-    if (curr.r === R - 1 && curr.c === C - 1) {
-      pathConnected = true;
-      break;
-    }
-
-    const tile = g3State.tiles[curr.r][curr.c];
-    if (tile.type === "obstacle") {
-      showToast("❌ Path Hit Obstacle Block!");
-      g3FeedbackLine.textContent = "❌ Path Hit Obstacle! Re-route path.";
-      g3FeedbackLine.className = "feedback-text bad";
-      break;
-    }
-
-    const dir = G3_DIRECTIONS[tile.dirIndex];
-    const nr = curr.r + dir.dr, nc = curr.c + dir.dc;
-
-    if (nr < 0 || nr >= R || nc < 0 || nc >= C) {
-      showToast("❌ Path Ran Out of Bounds!");
-      g3FeedbackLine.textContent = "❌ Out of Bounds! Adjust arrows toward door.";
-      g3FeedbackLine.className = "feedback-text bad";
-      break;
-    }
-
-    curr = { r: nr, c: nc };
-  }
-
-  if (pathConnected) {
-    clearInterval(g3State.timer);
-    g3State.locked = true;
-    playSound('win');
-
-    const movesUsed = g3State.movesCount;
-    const optimal = g3State.minimumMoves;
-    const efficiency = Math.min(100, Math.round((optimal / Math.max(1, movesUsed)) * 100));
-    const bonus = 200 + (efficiency * 3);
-    g3State.score += bonus;
-    g3Score.textContent = g3State.score;
-
-    const isPerfect = movesUsed <= optimal;
-    const perfMsg = isPerfect ? "🏆 Perfect Optimal Solution!" : "Good Job! Try to reduce your moves next time.";
-
-    g3FeedbackLine.innerHTML = `🎉 <b>LEVEL COMPLETE!</b> Moves: ${movesUsed} | Optimal: ${optimal} | Efficiency: <b style="color:var(--accent-mint);">${efficiency}%</b> — ${perfMsg}`;
-    g3FeedbackLine.className = "feedback-text ok";
-
-    setTimeout(() => {
-      if (g3State.level < 5) {
-        g3State.level++;
-        g3VariantTabs.forEach((t, i) => {
-          if (i === g3State.level - 1) t.classList.add("active");
-          else t.classList.remove("active");
-        });
-        loadG3Question();
-      } else {
-        saveActiveGameState("dashboard");
-        showSummaryScreen("Game 3: Path Finding (Arrow Maze)", g3State.score, efficiency, `${movesUsed} moves`);
-      }
-    }, 2500);
-  }
-}
-
 // Global Keyboard Listeners for Game Controls
 window.onkeydown = (e) => {
   const k = e.key;
-  if (!game1View.classList.contains("hidden")) {
+  if (game1View && !game1View.classList.contains("hidden")) {
     let r = g1State.player.r, c = g1State.player.c;
     if (k === 'ArrowUp' || k === 'w') r--;
     if (k === 'ArrowDown' || k === 's') r++;
@@ -1835,43 +1357,47 @@ const returnDashboardBtn = document.getElementById("returnDashboardBtn");
 function showSummaryScreen(gameName, score, accuracy, timeSpent) {
   saveUserAttempt(gameName, score, accuracy, timeSpent);
   hideAllViews();
-  summaryView.classList.remove("hidden");
+  if (summaryView) summaryView.classList.remove("hidden");
 
-  summaryTitle.textContent = `${gameName} Completed`;
-  summaryScoreRing.style.setProperty("--pct", accuracy);
-  summaryScorePct.textContent = accuracy + "%";
+  if (summaryTitle) summaryTitle.textContent = `${gameName} Completed`;
+  if (summaryScoreRing) summaryScoreRing.style.setProperty("--pct", accuracy);
+  if (summaryScorePct) summaryScorePct.textContent = accuracy + "%";
 
-  statCorrectVal.textContent = accuracy >= 70 ? "Passed" : "Needs Practice";
-  statScoreVal.textContent = score;
-  statAvgTimeVal.textContent = timeSpent;
+  if (statCorrectVal) statCorrectVal.textContent = accuracy >= 70 ? "Passed" : "Needs Practice";
+  if (statScoreVal) statScoreVal.textContent = score;
+  if (statAvgTimeVal) statAvgTimeVal.textContent = timeSpent;
 
-  if (isSeriesMode && activeGame < 2) {
-    nextModuleBtn.textContent = `Proceed to Game ${activeGame + 1} →`;
-    nextModuleBtn.onclick = () => {
-      launchDirectGame(activeGame + 1, true);
-    };
-  } else {
-    nextModuleBtn.textContent = "Back to Dashboard";
-    nextModuleBtn.onclick = () => {
-      saveActiveGameState("dashboard");
-      hideAllViews();
-      dashboardView.classList.remove("hidden");
-    };
+  if (nextModuleBtn) {
+    if (isSeriesMode && activeGame < 2) {
+      nextModuleBtn.textContent = `Proceed to Game ${activeGame + 1} →`;
+      nextModuleBtn.onclick = () => {
+        launchDirectGame(activeGame + 1, true);
+      };
+    } else {
+      nextModuleBtn.textContent = "Back to Dashboard";
+      nextModuleBtn.onclick = () => {
+        saveActiveGameState("dashboard");
+        hideAllViews();
+        if (dashboardView) dashboardView.classList.remove("hidden");
+      };
+    }
   }
 }
 
-returnDashboardBtn.onclick = () => {
-  saveActiveGameState("dashboard");
-  hideAllViews();
-  dashboardView.classList.remove("hidden");
-};
+if (returnDashboardBtn) {
+  returnDashboardBtn.onclick = () => {
+    saveActiveGameState("dashboard");
+    hideAllViews();
+    if (dashboardView) dashboardView.classList.remove("hidden");
+  };
+}
 
 function hideAllViews() {
-  authView.classList.add("hidden");
-  dashboardView.classList.add("hidden");
-  game1View.classList.add("hidden");
-  game2View.classList.add("hidden");
-  summaryView.classList.add("hidden");
+  if (authView) authView.classList.add("hidden");
+  if (dashboardView) dashboardView.classList.add("hidden");
+  if (game1View) game1View.classList.add("hidden");
+  if (game2View) game2View.classList.add("hidden");
+  if (summaryView) summaryView.classList.add("hidden");
 }
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
