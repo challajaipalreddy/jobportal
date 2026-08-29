@@ -400,6 +400,10 @@ document.addEventListener("click", (e) => {
 });
 
 function launchDirectGame(gameNum, series) {
+  if (!currentUser) {
+    loginUser({ name: "Candidate Guest", email: "guest@accenture.prep" });
+  }
+
   activeGame = gameNum;
   isSeriesMode = series;
 
@@ -450,11 +454,11 @@ function updateCarousel() {
 
   if (carouselIndex === carouselSlides.length - 1) {
     carouselNextBtn.classList.add("disabled");
-    carouselStartContainer.classList.remove("hidden");
   } else {
     carouselNextBtn.classList.remove("disabled");
-    carouselStartContainer.classList.add("hidden");
   }
+  // START button is always visible immediately on slide 1
+  if (carouselStartContainer) carouselStartContainer.classList.remove("hidden");
 }
 
 if (carouselPrevBtn && carouselNextBtn && carouselStartBtn) {
@@ -992,11 +996,11 @@ function updateG2Carousel() {
 
   if (g2CarouselIdx === g2CarouselSlides.length - 1) {
     g2CarouselNextBtn.classList.add("disabled");
-    g2CarouselStartContainer.classList.remove("hidden");
   } else {
     g2CarouselNextBtn.classList.remove("disabled");
-    g2CarouselStartContainer.classList.add("hidden");
   }
+  // START button is always visible immediately on slide 1
+  if (g2CarouselStartContainer) g2CarouselStartContainer.classList.remove("hidden");
 }
 
 if (g2CarouselPrevBtn && g2CarouselNextBtn && g2CarouselStartBtn) {
