@@ -1436,6 +1436,13 @@ window.onload = () => {
     if (stored) {
       loginUser(JSON.parse(stored));
       restoreActiveGameState();
+      return;
     }
   }
+
+  // Default guest session so Dashboard Home Page is instantly active for all visitors
+  loginUser({ name: "Candidate", email: "guest@accenture.prep" });
+  if (authView) authView.classList.add("hidden");
+  if (dashboardView) dashboardView.classList.remove("hidden");
+  if (navUserSection) navUserSection.classList.remove("hidden");
 };
