@@ -17,7 +17,7 @@
 
     <!-- TOP NAVIGATION BAR -->
     <header class="navbar">
-      <div id="navBrandLogo" class="nav-brand" title="Click to Return to Home Dashboard">
+      <div class="nav-brand">
         <div class="brand-logo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="logo-icon">
             <path d="M4 18l10-6L4 6v12zm11-12v12l5-6-5-6z" fill="currentColor"/>
@@ -29,13 +29,11 @@
         </div>
       </div>
 
-      <div class="nav-actions">
-        <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" rel="noopener noreferrer" class="whatsapp-nav-btn">
+      <div id="navUserSection" class="nav-user hidden">
+        <button class="btn btn-sm btn-outline back-to-dashboard-btn" style="border-color:#6366f1; color:#a5b4fc;">🏠 Home / Dashboard</button>
+        <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" rel="noopener" class="btn-whatsapp">
           💬 Join WhatsApp Channel
         </a>
-      </div>
-
-      <div id="navUserSection" class="nav-user hidden">
         <div class="server-status-pill">
           <span class="status-dot green"></span>
           <span id="apiStatusText">Server API Connected</span>
@@ -91,12 +89,6 @@
           </div>
           <button type="submit" class="btn btn-primary btn-full">Create Account & Start</button>
         </form>
-
-        <div style="margin-top: 20px; text-align: center;">
-          <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" rel="noopener noreferrer" class="whatsapp-nav-btn" style="display: inline-flex; justify-content: center; width: 100%;">
-            💬 Join Official WhatsApp Channel for Prep
-          </a>
-        </div>
       </div>
     </section>
 
@@ -109,11 +101,19 @@
           <p>Complete the gamified test modules back-to-back under relaxed practice mode with infinite generated practice examples.</p>
           <div class="hero-actions">
             <button id="startAllGamesBtn" class="btn btn-primary btn-lg">🚀 Start Full Assessment Series</button>
-            <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" rel="noopener noreferrer" class="whatsapp-nav-btn" style="padding: 12px 24px; font-size: 15px;">
-              💬 Join WhatsApp Updates Channel
-            </a>
+            <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" rel="noopener" class="btn-whatsapp-lg">💬 Join WhatsApp Channel</a>
           </div>
         </div>
+      </div>
+
+      <!-- WHATSAPP ANNOUNCEMENT BANNER -->
+      <div class="whatsapp-banner-card">
+        <div class="wa-content">
+          <span class="wa-badge">📱 Official WhatsApp Community</span>
+          <h3>Join our WhatsApp Channel for Daily Exam Questions & Updates!</h3>
+          <p>Stay ahead with instant Accenture cognitive assessment updates, daily slot alerts & practice sets.</p>
+        </div>
+        <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" rel="noopener" class="btn-whatsapp-lg">👉 Join WhatsApp Channel</a>
       </div>
 
       <!-- PLATFORM STATS STRIP -->
@@ -212,27 +212,14 @@
         </div>
       </div>
 
-      <!-- COMMUNITY & OFFICIAL LINKS FOOTER CARD -->
-      <div class="footer-community-card">
-        <div class="footer-community-info">
-          <h4>🚀 Accenture Candidate Placement Community</h4>
-          <p>Official Portal: <a href="https://jobportal-3-123t.onrender.com/" target="_blank" class="footer-web-link">jobportal-3-123t.onrender.com</a></p>
-        </div>
-        <div class="footer-links">
-          <a href="https://whatsapp.com/channel/0029VbDJUycBKfhyMOeZvW0d" target="_blank" rel="noopener noreferrer" class="whatsapp-nav-btn" style="padding: 10px 20px; font-size: 14px;">
-            💬 Join WhatsApp Channel
-          </a>
-        </div>
-      </div>
-
     </section>
 
     <!-- GAME 1 CONTAINER: MEMORY MAZE (12 LEVEL TABS & INFINITE EXAMPLES) -->
     <section id="game1View" class="view-section hidden">
       
-      <!-- VARIANT SELECTOR TABS WITH GO BACK HOME BUTTON -->
+      <!-- VARIANT SELECTOR TABS (12 LEVEL TABS + BACK TO DASHBOARD BUTTON) -->
       <div class="variant-tabs-bar">
-        <button id="g1BackHomeBtn" class="back-home-btn">← Back to Home</button>
+        <button class="btn btn-sm btn-outline back-to-dashboard-btn" style="border-color:#6366f1; color:#a5b4fc; margin-right: 12px;">← Back to Dashboard</button>
         <button class="variant-tab active" data-var="1">Lvl 1 (Easy 3x3)</button>
         <button class="variant-tab" data-var="2">Lvl 2 (Easy Peek)</button>
         <button class="variant-tab" data-var="3">Lvl 3 (Med 4x4)</button>
@@ -298,9 +285,9 @@
     <!-- GAME 2 CONTAINER: SELECT BUBBLES (SIDE-BY-SIDE LAYOUT) -->
     <section id="game2View" class="view-section hidden">
       
-      <!-- GAME 2 CATEGORY TABS WITH GO BACK HOME BUTTON -->
+      <!-- GAME 2 CATEGORY TABS (20 EASY & 20 MEDIUM + BACK TO DASHBOARD BUTTON) -->
       <div class="variant-tabs-bar">
-        <button id="g2BackHomeBtn" class="back-home-btn">← Back to Home</button>
+        <button class="btn btn-sm btn-outline back-to-dashboard-btn" style="border-color:#6366f1; color:#a5b4fc; margin-right: 12px;">← Back to Dashboard</button>
         <button class="g2-variant-tab active" data-set="1">Easy (20 Questions)</button>
         <button class="g2-variant-tab" data-set="2">Medium (20 Questions)</button>
       </div>
@@ -400,7 +387,7 @@
 
         <div class="summary-actions">
           <button id="nextModuleBtn" class="btn btn-primary btn-lg">Proceed to Next Game →</button>
-          <button id="returnDashboardBtn" class="btn btn-ghost">Return to Dashboard</button>
+          <button id="returnDashboardBtn" class="btn btn-ghost back-to-dashboard-btn">Return to Dashboard</button>
         </div>
       </div>
     </section>
