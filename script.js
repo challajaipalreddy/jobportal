@@ -91,24 +91,9 @@ function saveActiveGameState(viewName) {
 }
 
 function restoreActiveGameState() {
-  const raw = localStorage.getItem("accenture_active_session_state");
-  if (!raw) return;
-  try {
-    const s = JSON.parse(raw);
-    if (s.activeView === "game1") {
-      g1State.variantId = s.g1VariantId || 1;
-      startGame1();
-    } else if (s.activeView === "game2") {
-      g2State.setId = s.g2SetId || 1;
-      g2State.qIndex = s.g2QIndex || 0;
-      startGame2();
-    } else {
-      hideAllViews();
-      if (dashboardView) dashboardView.classList.remove("hidden");
-    }
-  } catch (e) {
-    console.log("Error restoring state", e);
-  }
+  hideAllViews();
+  if (dashboardView) dashboardView.classList.remove("hidden");
+  if (navUserSection) navUserSection.classList.remove("hidden");
 }
 
 // --- AUTHENTICATION & FULL-STACK API ---
@@ -1427,22 +1412,30 @@ function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) 
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } }
 function formatTime(s) { const m = Math.floor(s / 60), ss = s % 60; return `${m < 10 ? '0' + m : m}:${ss < 10 ? '0' + ss : ss}`; }
 
-// Auto login & Session State Restoration on Page Refresh
+// Auto login & Always Land Fresh on Dashboard Home Page
 window.onload = () => {
   fetchStats();
+  localStorage.removeItem("accenture_active_session_state");
+
   const savedEmail = localStorage.getItem("current_user_email");
   if (savedEmail) {
     const stored = localStorage.getItem(`user_${savedEmail}`);
     if (stored) {
-      loginUser(JSON.parse(stored));
-      restoreActiveGameState();
-      return;
+      currentUser = JSON.parse(stored);
     }
   }
 
-  // Default guest session so Dashboard Home Page is instantly active for all visitors
-  loginUser({ name: "Candidate", email: "guest@accenture.prep" });
-  if (authView) authView.classList.add("hidden");
+  if (!currentUser) {
+    currentUser = { name: "Candidate", email: "guest@accenture.prep" };
+  }
+
+  if (navUserName) navUserName.textContent = currentUser.name || "Candidate";
+  if (navUserEmail) navUserEmail.textContent = currentUser.email || "guest@accenture.prep";
+
+  hideAllViews();
   if (dashboardView) dashboardView.classList.remove("hidden");
   if (navUserSection) navUserSection.classList.remove("hidden");
+
+  fetchAttempts();
+  fetchLeaderboard();
 };
