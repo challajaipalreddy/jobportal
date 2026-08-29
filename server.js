@@ -262,22 +262,33 @@ function startServer() {
       });
     }
 
-    // --- HIGH SPEED STATIC FILE SERVING WITH CACHING & GZIP ---
+    // --- HIGH SPEED STATIC FILE SERVING WITH INSTANT RE-VALIDATION ---
     let filePath = path.join(__dirname, pathname === '/' ? 'index.html' : pathname);
-    const cachedFile = getCachedFile(filePath);
 
-    if (cachedFile) {
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath);
+      const ext = path.extname(filePath);
+      const mime = MIME_TYPES[ext] || 'application/octet-stream';
       const acceptEncoding = req.headers['accept-encoding'] || '';
-      res.setHeader('Content-Type', cachedFile.mime);
-      res.setHeader('Cache-Control', 'public, max-age=3600');
 
-      if (acceptEncoding.includes('gzip') && cachedFile.gzipContent) {
-        res.setHeader('Content-Encoding', 'gzip');
-        res.writeHead(200);
-        res.end(cachedFile.gzipContent);
+      res.setHeader('Content-Type', mime);
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+
+      if (acceptEncoding.includes('gzip')) {
+        zlib.gzip(content, (err, gzipData) => {
+          if (err) {
+            res.writeHead(200);
+            return res.end(content);
+          }
+          res.setHeader('Content-Encoding', 'gzip');
+          res.writeHead(200);
+          res.end(gzipData);
+        });
       } else {
         res.writeHead(200);
-        res.end(cachedFile.content);
+        res.end(content);
       }
     } else {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
