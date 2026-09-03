@@ -1006,64 +1006,71 @@ def jobs_import():
         
         for i in range(1, total_rows + 1):
             if request.form.get(f'include_row_{i}') == '1':
-                comp_name = request.form.get(f'company_{i}', '').strip()
-                comp_logo = request.form.get(f'company_logo_{i}', '').strip()
-                title = request.form.get(f'title_{i}', '').strip()
-                app_url = request.form.get(f'application_url_{i}', '').strip()
-                cat_name = request.form.get(f'category_{i}', '').strip()
+                comp_name = (request.form.get(f'company_{i}') or '').strip()
+                comp_logo = (request.form.get(f'company_logo_{i}') or '').strip()
+                title = (request.form.get(f'title_{i}') or '').strip()
+                app_url = (request.form.get(f'application_url_{i}') or '').strip()
+                cat_name = (request.form.get(f'category_{i}') or '').strip()
                 
                 if comp_name and title and app_url:
-                    comp = Company.query.filter(Company.name.ilike(comp_name)).first()
-                    if not comp:
-                        comp = Company(name=comp_name, slug=generate_unique_slug(Company, comp_name), logo=comp_logo or None)
-                        db.session.add(comp)
-                        db.session.commit()
-                    elif comp_logo and not comp.logo:
-                        comp.logo = comp_logo
-                        db.session.commit()
+                    try:
+                        comp = Company.query.filter(Company.name.ilike(comp_name)).first()
+                        if not comp:
+                            comp = Company(name=comp_name, slug=generate_unique_slug(Company, comp_name), logo=comp_logo or None)
+                            db.session.add(comp)
+                            db.session.commit()
+                        elif comp_logo and not comp.logo:
+                            comp.logo = comp_logo
+                            db.session.commit()
+                            
+                        cat = Category.query.filter(Category.name.ilike(cat_name)).first() if cat_name else None
                         
-                    cat = Category.query.filter(Category.name.ilike(cat_name)).first() if cat_name else None
-                    
-                    slug = generate_unique_slug(Job, title)
-                    yt_url = request.form.get(f'youtube_url_{i}', '').strip()
-                    yt_id = extract_youtube_id(yt_url)
-                    
-                    deadline_val = None
-                    d_str = request.form.get(f'application_deadline_{i}', '').strip()
-                    if d_str:
-                        try: deadline_val = datetime.strptime(d_str, '%Y-%m-%d').date()
-                        except: pass
-                    
-                    job = Job(
-                        title=title,
-                        slug=slug,
-                        company_id=comp.id,
-                        company_logo=comp_logo or None,
-                        category_id=cat.id if cat else None,
-                        location=request.form.get(f'location_{i}', 'India'),
-                        experience=request.form.get(f'experience_{i}', '0–2 Years'),
-                        qualification=request.form.get(f'qualification_{i}', ''),
-                        job_type=request.form.get(f'job_type_{i}', 'Full-Time'),
-                        work_mode=request.form.get(f'work_mode_{i}', 'On-site'),
-                        skills=request.form.get(f'skills_{i}', ''),
-                        salary=request.form.get(f'salary_{i}', ''),
-                        short_description=request.form.get(f'short_description_{i}', '')[:250],
-                        description=request.form.get(f'description_{i}', title),
-                        responsibilities=request.form.get(f'responsibilities_{i}', ''),
-                        eligibility=request.form.get(f'eligibility_{i}', ''),
-                        application_url=app_url,
-                        source_url=request.form.get(f'source_url_{i}', ''),
-                        application_deadline=deadline_val,
-                        youtube_video_url=yt_url or None,
-                        youtube_video_id=yt_id,
-                        youtube_thumbnail=f"https://img.youtube.com/vi/{yt_id}/hqdefault.jpg" if yt_id else None,
-                        featured=True if request.form.get(f'featured_{i}') == '1' else False,
-                        status=request.form.get(f'status_val_{i}', 'Active')
-                    )
-                    db.session.add(job)
-                    import_count += 1
-                    
-        db.session.commit()
+                        slug = generate_unique_slug(Job, title)
+                        yt_url = (request.form.get(f'youtube_url_{i}') or '').strip()
+                        yt_id = extract_youtube_id(yt_url)
+                        
+                        deadline_val = None
+                        d_str = (request.form.get(f'application_deadline_{i}') or '').strip()
+                        if d_str:
+                            try: deadline_val = datetime.strptime(d_str, '%Y-%m-%d').date()
+                            except: pass
+                        
+                        short_desc = (request.form.get(f'short_description_{i}') or '')[:250]
+                        desc = request.form.get(f'description_{i}') or title
+                        
+                        job = Job(
+                            title=title,
+                            slug=slug,
+                            company_id=comp.id,
+                            company_logo=comp_logo or None,
+                            category_id=cat.id if cat else None,
+                            location=request.form.get(f'location_{i}') or 'India',
+                            experience=request.form.get(f'experience_{i}') or '0–2 Years',
+                            qualification=request.form.get(f'qualification_{i}') or '',
+                            job_type=request.form.get(f'job_type_{i}') or 'Full-Time',
+                            work_mode=request.form.get(f'work_mode_{i}') or 'On-site',
+                            skills=request.form.get(f'skills_{i}') or '',
+                            salary=request.form.get(f'salary_{i}') or '',
+                            short_description=short_desc,
+                            description=desc,
+                            responsibilities=request.form.get(f'responsibilities_{i}') or '',
+                            eligibility=request.form.get(f'eligibility_{i}') or '',
+                            application_url=app_url,
+                            source_url=request.form.get(f'source_url_{i}') or '',
+                            application_deadline=deadline_val,
+                            youtube_video_url=yt_url or None,
+                            youtube_video_id=yt_id,
+                            youtube_thumbnail=f"https://img.youtube.com/vi/{yt_id}/hqdefault.jpg" if yt_id else None,
+                            featured=True if request.form.get(f'featured_{i}') == '1' else False,
+                            status=request.form.get(f'status_val_{i}') or 'Active'
+                        )
+                        db.session.add(job)
+                        db.session.commit()
+                        import_count += 1
+                    except Exception as err:
+                        db.session.rollback()
+                        print(f"Error importing row {i}:", err)
+                        
         flash(f'Successfully imported {import_count} jobs!', 'success')
         return redirect(url_for('admin.jobs_list'))
 
