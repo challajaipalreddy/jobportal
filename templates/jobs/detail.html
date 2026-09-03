@@ -8,11 +8,11 @@
 {
   "@context": "https://schema.org/",
   "@type": "JobPosting",
-  "title": "{{ job.title }}",
-  "description": "{{ (job.short_description or job.description)|striptags|escape }}",
+  "title": "{{ job.title|e }}",
+  "description": "{{ (job.short_description or job.description)|striptags|e }}",
   "identifier": {
     "@type": "PropertyValue",
-    "name": "{{ job.company.name }}",
+    "name": "{{ job.company.name|e }}",
     "value": "{{ job.id }}"
   },
   "datePosted": "{{ job.posted_date.strftime('%Y-%m-%d') }}",
@@ -20,9 +20,10 @@
   "validThrough": "{{ job.application_deadline.strftime('%Y-%m-%d') }}",
   {% endif %}
   "employmentType": "{% if job.job_type == 'Internship' %}INTERN{% else %}FULL_TIME{% endif %}",
+  "directApply": true,
   "hiringOrganization" : {
     "@type" : "Organization",
-    "name" : "{{ job.company.name }}",
+    "name" : "{{ job.company.name|e }}",
     "sameAs" : "{{ job.company.website or '' }}",
     "logo" : "{{ job.get_logo_url() or '' }}"
   },
@@ -33,14 +34,21 @@
       "addressLocality": "{{ job.location or 'India' }}",
       "addressCountry": "IN"
     }
+  },
+  "applicantLocationRequirements": {
+    "@type": "Country",
+    "name": "India"
   }
+  {% if job.work_mode and ('remote' in job.work_mode.lower() or 'home' in job.work_mode.lower()) %},
+  "jobLocationType": "TELECOMMUTE"
+  {% endif %}
   {% if job.salary %},
   "baseSalary": {
     "@type": "MonetaryAmount",
     "currency": "INR",
     "value": {
       "@type": "QuantitativeValue",
-      "value": "{{ job.salary }}",
+      "value": "{{ job.salary|e }}",
       "unitText": "YEAR"
     }
   }
@@ -299,9 +307,9 @@
                 <div class="mb-3">
                     <h6 class="fw-bold mb-2">Share Opportunity</h6>
                     <div class="d-flex gap-2">
-                        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20job%20opportunity%3A%20{{ request.url }}" target="_blank" class="btn btn-outline-success btn-sm flex-fill"><i class="bi bi-whatsapp"></i></a>
-                        <a href="https://telegram.me/share/url?url={{ request.url }}&text={{ job.title }}" target="_blank" class="btn btn-outline-primary btn-sm flex-fill"><i class="bi bi-telegram"></i></a>
-                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url }}" target="_blank" class="btn btn-outline-info btn-sm flex-fill"><i class="bi bi-linkedin"></i></a>
+                        <a href="https://api.whatsapp.com/send?text=%F0%9F%94%A5%20*{{ job.company.name|urlencode }}%20-%20{{ job.title|urlencode }}*%0A%F0%9F%93%9D%20Exp:%20{{ (job.experience or '0-2 Yrs')|urlencode }}%0A%F0%9F%92%B0%20Salary:%20{{ (job.salary or 'Best in Industry')|urlencode }}%0A%F0%9F%93%90%20Mode:%20{{ (job.work_mode or 'On-site')|urlencode }}%0A%0A%F0%9F%91%89%20*Apply%20Now*:%20{{ request.url|urlencode }}" target="_blank" class="btn btn-success btn-sm flex-fill fw-bold"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a>
+                        <a href="https://telegram.me/share/url?url={{ request.url|urlencode }}&text={{ (job.company.name + ' - ' + job.title)|urlencode }}" target="_blank" class="btn btn-outline-primary btn-sm flex-fill"><i class="bi bi-telegram"></i></a>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url|urlencode }}" target="_blank" class="btn btn-outline-info btn-sm flex-fill"><i class="bi bi-linkedin"></i></a>
                         <button onclick="copyToClipboard('{{ request.url }}')" class="btn btn-outline-secondary btn-sm flex-fill"><i class="bi bi-link-45deg"></i></button>
                     </div>
                 </div>
