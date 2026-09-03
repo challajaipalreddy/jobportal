@@ -129,10 +129,17 @@ with app.app_context():
     try:
         db.create_all()
         from app.models import Category, User
-        if not Category.query.first():
-            from seed import seed_database
-            seed_database(app)
 
+        # Create default essential categories if completely empty
+        if not Category.query.first():
+            default_categories = [
+                Category(name='Software Development', slug='software-development', icon='bi-code-slash', description='Software engineering and developer roles.'),
+                Category(name='Data Science', slug='data-science', icon='bi-cpu', description='AI, ML, and data roles.'),
+                Category(name='Internships', slug='internships', icon='bi-mortarboard', description='Paid internships for students.'),
+                Category(name='Government Jobs', slug='government-jobs', icon='bi-building-check', description='Public sector jobs.')
+            ]
+            for cat in default_categories:
+                db.session.add(cat)
 
         # Guarantee admin user 'admin' exists with password 'admin123'
         admin = User.query.filter_by(email='admin@campustocareer.com').first()
