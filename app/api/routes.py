@@ -159,14 +159,18 @@ def razorpay_verify_payment():
         session['pdf_access_unlocked'] = True
 
         # Save payment submission log in DB
-        submission = PaymentSubmission(
-            email=email,
-            utr_ref=f"RZP-{razorpay_payment_id}",
-            status='Approved',
-            notes=f"Razorpay Order: {razorpay_order_id}"
-        )
-        db.session.add(submission)
-        db.session.commit()
+        try:
+            submission = PaymentSubmission(
+                user_email=email,
+                phone='Razorpay',
+                txn_id=f"RZP-{razorpay_payment_id}",
+                amount=99.0,
+                status='Approved'
+            )
+            db.session.add(submission)
+            db.session.commit()
+        except Exception as db_err:
+            db.session.rollback()
 
         return jsonify({'success': True, 'message': 'Payment verified successfully! PDF Access granted.'})
     except Exception as err:
