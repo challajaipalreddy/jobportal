@@ -96,3 +96,79 @@ def get_companies():
     companies = Company.query.all()
     data = [{'id': c.id, 'name': c.name, 'slug': c.slug, 'logo': c.logo, 'website': c.website} for c in companies]
     return jsonify({'success': True, 'companies': data})
+
+# --- RAZORPAY STANDARD WEB CHECKOUT API ---
+import razorpay
+from flask import session
+from app import db
+from app.models import SiteSetting, PaymentSubmission
+
+@api_bp.route('/razorpay/create-order', methods=['POST'])
+def razorpay_create_order():
+    try:
+        key_id_setting = SiteSetting.query.filter_by(key='razorpay_key_id').first()
+        key_secret_setting = SiteSetting.query.filter_by(key='razorpay_key_secret').first()
+        price_setting = SiteSetting.query.filter_by(key='study_pass_price').first()
+
+        key_id = key_id_setting.value.strip() if key_id_setting and key_id_setting.value else 'rzp_test_TaFAKzUooiq0cD'
+        key_secret = key_secret_setting.value.strip() if key_secret_setting and key_secret_setting.value else 'pkBEw6iVbb2DGii8M4BdIW7Y'
+        price = int(price_setting.value.strip()) if price_setting and price_setting.value else 99
+
+        client = razorpay.Client(auth=(key_id, key_secret))
+        order_data = {
+            'amount': price * 100,  # Amount in paise (9900 = ₹99)
+            'currency': 'INR',
+            'payment_capture': '1'
+        }
+        order = client.order.create(data=order_data)
+        return jsonify({
+            'success': True,
+            'order_id': order['id'],
+            'amount': order['amount'],
+            'currency': order['currency'],
+            'key_id': key_id
+        })
+    except Exception as err:
+        return jsonify({'success': False, 'error': str(err)}), 500
+
+@api_bp.route('/razorpay/verify-payment', methods=['POST'])
+def razorpay_verify_payment():
+    try:
+        data = request.get_json() or request.form
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_signature = data.get('razorpay_signature')
+        email = data.get('email', 'customer@campustocareer.com')
+
+        key_id_setting = SiteSetting.query.filter_by(key='razorpay_key_id').first()
+        key_secret_setting = SiteSetting.query.filter_by(key='razorpay_key_secret').first()
+
+        key_id = key_id_setting.value.strip() if key_id_setting and key_id_setting.value else 'rzp_test_TaFAKzUooiq0cD'
+        key_secret = key_secret_setting.value.strip() if key_secret_setting and key_secret_setting.value else 'pkBEw6iVbb2DGii8M4BdIW7Y'
+
+        client = razorpay.Client(auth=(key_id, key_secret))
+        params_dict = {
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature
+        }
+
+        client.utility.verify_payment_signature(params_dict)
+
+        # Payment verified successfully! Grant lifetime PDF access to candidate
+        session['pdf_access_unlocked'] = True
+
+        # Save payment submission log in DB
+        submission = PaymentSubmission(
+            email=email,
+            utr_ref=f"RZP-{razorpay_payment_id}",
+            status='Approved',
+            notes=f"Razorpay Order: {razorpay_order_id}"
+        )
+        db.session.add(submission)
+        db.session.commit()
+
+        return jsonify({'success': True, 'message': 'Payment verified successfully! PDF Access granted.'})
+    except Exception as err:
+        return jsonify({'success': False, 'error': f"Signature verification failed: {str(err)}"}), 400
+

@@ -46,12 +46,25 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small">Study Pass Price (₹)</label>
+                        <label class="form-label fw-semibold small">PDF VIP Pass Price (₹)</label>
                         <input type="text" name="study_pass_price" value="{{ pass_price }}" class="form-control" placeholder="99">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold small">UPI ID for Payments</label>
+                        <label class="form-label fw-semibold small">UPI ID for Manual Payments</label>
                         <input type="text" name="upi_id" value="{{ upi_id }}" class="form-control" placeholder="campustocareer@upi">
+                    </div>
+                </div>
+
+                <h5 class="fw-bold border-bottom pb-2 mb-3 mt-4 text-primary"><i class="bi bi-credit-card-2-front me-2"></i> Razorpay Payment Gateway Configuration</h5>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Razorpay Key ID</label>
+                        <input type="text" name="razorpay_key_id" value="{{ razorpay_key_id }}" class="form-control font-monospace" placeholder="rzp_live_... or rzp_test_...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Razorpay Key Secret</label>
+                        <input type="password" name="razorpay_key_secret" value="{{ razorpay_key_secret }}" class="form-control font-monospace" placeholder="••••••••••••••••">
                     </div>
                 </div>
 

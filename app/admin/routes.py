@@ -1319,8 +1319,25 @@ def settings():
         else:
             ads_en_setting.value = ads_enabled
 
+        # Razorpay Payment Gateway Settings
+        rzp_key_id = request.form.get('razorpay_key_id', 'rzp_test_TaFAKzUooiq0cD').strip()
+        rzp_key_setting = SiteSetting.query.filter_by(key='razorpay_key_id').first()
+        if not rzp_key_setting:
+            rzp_key_setting = SiteSetting(key='razorpay_key_id', value=rzp_key_id)
+            db.session.add(rzp_key_setting)
+        else:
+            rzp_key_setting.value = rzp_key_id
+
+        rzp_secret = request.form.get('razorpay_key_secret', 'pkBEw6iVbb2DGii8M4BdIW7Y').strip()
+        rzp_secret_setting = SiteSetting.query.filter_by(key='razorpay_key_secret').first()
+        if not rzp_secret_setting:
+            rzp_secret_setting = SiteSetting(key='razorpay_key_secret', value=rzp_secret)
+            db.session.add(rzp_secret_setting)
+        else:
+            rzp_secret_setting.value = rzp_secret
+
         db.session.commit()
-        flash('Website & Google AdSense settings saved successfully!', 'success')
+        flash('Website & Razorpay Payment settings saved successfully!', 'success')
         return redirect(url_for('admin.settings'))
 
     announcement_setting = SiteSetting.query.filter_by(key='announcement_banner').first()
@@ -1328,6 +1345,8 @@ def settings():
     upi_setting = SiteSetting.query.filter_by(key='upi_id').first()
     ads_id_setting = SiteSetting.query.filter_by(key='google_adsense_client_id').first()
     ads_en_setting = SiteSetting.query.filter_by(key='google_adsense_enabled').first()
+    rzp_key_setting = SiteSetting.query.filter_by(key='razorpay_key_id').first()
+    rzp_secret_setting = SiteSetting.query.filter_by(key='razorpay_key_secret').first()
 
     return render_template('admin/settings.html', 
                            announcement=announcement_setting.value if announcement_setting else '',
@@ -1335,7 +1354,9 @@ def settings():
                            upi_id=upi_setting.value if upi_setting else 'campustocareer@upi',
                            adsense_client_id=ads_id_setting.value if ads_id_setting else '',
                            adsense_enabled=(ads_en_setting.value == 'true') if ads_en_setting else False,
-                           title='Website & Google AdSense Settings - Admin')
+                           razorpay_key_id=rzp_key_setting.value if rzp_key_setting else 'rzp_test_TaFAKzUooiq0cD',
+                           razorpay_key_secret=rzp_secret_setting.value if rzp_secret_setting else 'pkBEw6iVbb2DGii8M4BdIW7Y',
+                           title='Website & Payment Gateway Settings - Admin')
 
 # --- PAYMENT SUBMISSIONS ---
 

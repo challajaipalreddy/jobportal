@@ -187,8 +187,18 @@ def study_materials():
     except Exception:
         pass
 
+    key_id_setting = SiteSetting.query.filter_by(key='razorpay_key_id').first()
+    price_setting = SiteSetting.query.filter_by(key='study_pass_price').first()
+
+    key_id = key_id_setting.value.strip() if key_id_setting and key_id_setting.value else 'rzp_test_TaFAKzUooiq0cD'
+    pass_price = price_setting.value.strip() if price_setting and price_setting.value else '99'
+    pdf_unlocked = session.get('pdf_access_unlocked', False)
+
     return render_template('pages/study_materials.html', 
                            categories=categories,
+                           pdf_unlocked=pdf_unlocked,
+                           pass_price=pass_price,
+                           razorpay_key_id=key_id,
                            title="PDF Notes & Study Material Library - Campus to Career")
 
 

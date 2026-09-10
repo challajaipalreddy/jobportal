@@ -2,15 +2,54 @@
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block extra_css %}
+<!-- Razorpay Standard Web Checkout SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endblock %}
+
 {% block content %}
 <!-- High-Contrast Luxury Header Hero -->
-<section class="py-5 mb-5 position-relative shadow-sm" style="background: linear-gradient(135deg, #0B132B 0%, #0F172A 100%); border-bottom: 3px solid var(--accent-orange);">
+<section class="py-5 mb-4 position-relative shadow-sm" style="background: linear-gradient(135deg, #0B132B 0%, #0F172A 100%); border-bottom: 3px solid var(--accent-orange);">
     <div class="container text-center py-3">
-        <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold fs-6 shadow-sm"><i class="bi bi-file-earmark-pdf-fill me-1"></i> FREE STUDY MATERIAL LIBRARY</span>
-        <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -0.5px;">PDF Notes & Study Material Library</h1>
+        <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold fs-6 shadow-sm"><i class="bi bi-shield-check me-1"></i> VERIFIED PLACEMENT STUDY MATERIALS</span>
+        <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -0.5px;">PDF Notes & Placement Library</h1>
         <p class="lead text-light max-w-700 mx-auto mb-4 opacity-90 fw-normal fs-5">Handwritten placement notes, Python & Java coding questions, SQL interview sheets, aptitude shortcuts, and company placement papers.</p>
-        
-        <div class="d-flex justify-content-center flex-wrap gap-2">
+
+        {% if not pdf_unlocked %}
+        <!-- VIP RAZORPAY PASS BANNER -->
+        <div class="card border-0 rounded-4 shadow-lg p-4 max-w-700 mx-auto text-dark bg-white position-relative overflow-hidden" style="border-top: 4px solid var(--accent-orange) !important;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="text-start">
+                    <span class="badge bg-danger text-white extra-small fw-bold text-uppercase mb-1"><i class="bi bi-lightning-fill me-1"></i> Special Offer</span>
+                    <h4 class="fw-bold mb-1 text-dark">VIP Placement Pass — Lifetime Access</h4>
+                    <p class="small text-muted mb-0">Unlock all 37+ handwritten notes, coding sheets & interview guides instantly.</p>
+                </div>
+                <div class="text-end ms-auto">
+                    <span class="fs-2 fw-bold text-primary">₹{{ pass_price }}</span>
+                    <span class="text-muted small text-decoration-line-through d-block">₹499</span>
+                </div>
+                <button onclick="initiateRazorpayPayment()" class="btn btn-accent btn-lg rounded-pill fw-bold text-white shadow py-3 px-4 w-100 mt-2">
+                    <i class="bi bi-credit-card-fill me-2"></i> Pay ₹{{ pass_price }} & Unlock All PDFs
+                </button>
+            </div>
+            <div class="d-flex justify-content-center gap-3 mt-3 extra-small text-muted">
+                <span><i class="bi bi-shield-lock-fill text-success me-1"></i> Secure Razorpay Payment</span>
+                <span><i class="bi bi-qr-code-scan text-primary me-1"></i> Instant UPI / GPay / PhonePe</span>
+                <span><i class="bi bi-infinity text-warning me-1"></i> Lifetime Access</span>
+            </div>
+        </div>
+        {% else %}
+        <!-- UNLOCKED ACCESS STATUS -->
+        <div class="alert alert-success border-0 shadow-sm rounded-4 max-w-700 mx-auto d-flex align-items-center gap-3 p-3">
+            <i class="bi bi-patch-check-fill fs-2 text-success"></i>
+            <div class="text-start">
+                <h6 class="fw-bold mb-0">VIP Access Active — All PDFs Unlocked!</h6>
+                <span class="small text-muted">You have lifetime access to view and download all study materials in our library.</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
             {% for cat_title in categories.keys() %}
                 <a href="#cat-{{ loop.index }}" class="btn btn-outline-warning btn-sm rounded-pill px-3 fw-bold shadow-sm" style="border-width: 1.5px;">
                     {{ cat_title.split()[0] }} Notes
@@ -41,19 +80,32 @@
                         <div class="p-3 bg-light rounded-3 text-primary fs-4">
                             <i class="bi {{ note.icon }}"></i>
                         </div>
-                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1"><i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF Document</span>
+                        {% if pdf_unlocked %}
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1"><i class="bi bi-unlock-fill me-1"></i> Unlocked</span>
+                        {% else %}
+                        <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25 px-2 py-1"><i class="bi bi-lock-fill me-1"></i> Premium PDF</span>
+                        {% endif %}
                     </div>
 
                     <h5 class="fw-bold text-dark mb-2">{{ note.name }}</h5>
                     <p class="text-secondary small mb-4 flex-grow-1" style="line-height: 1.6;">{{ note.desc }}</p>
 
                     <div class="d-flex align-items-center gap-2 mt-auto pt-3 border-top">
+                        {% if pdf_unlocked %}
                         <a href="{{ url_for('main.download_note', filename=note.file) }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill flex-fill fw-semibold">
                             <i class="bi bi-eye me-1"></i> View PDF
                         </a>
                         <a href="{{ url_for('main.download_note', filename=note.file) }}" download class="btn btn-accent btn-sm rounded-pill flex-fill fw-bold shadow-sm">
                             <i class="bi bi-download me-1"></i> Download
                         </a>
+                        {% else %}
+                        <button onclick="initiateRazorpayPayment('{{ note.file }}')" class="btn btn-outline-primary btn-sm rounded-pill flex-fill fw-semibold">
+                            <i class="bi bi-lock-fill me-1"></i> Unlock View
+                        </button>
+                        <button onclick="initiateRazorpayPayment('{{ note.file }}')" class="btn btn-accent btn-sm rounded-pill flex-fill fw-bold shadow-sm">
+                            <i class="bi bi-cart-plus me-1"></i> Pay ₹{{ pass_price }} & Download
+                        </button>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -62,4 +114,54 @@
     </div>
     {% endfor %}
 </div>
+
+<script>
+function initiateRazorpayPayment(pdfFile) {
+    fetch('{{ url_for("api.razorpay_create_order") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success) {
+            var options = {
+                "key": data.key_id,
+                "amount": data.amount,
+                "currency": data.currency,
+                "name": "Campus to Career",
+                "description": "VIP Placement PDF Notes Access Pass",
+                "order_id": data.order_id,
+                "handler": function (response) {
+                    fetch('{{ url_for("api.razorpay_verify_payment") }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
+                    })
+                    .then(function(res) { return res.json(); })
+                    .then(function(resData) {
+                        if (resData.success) {
+                            alert('🎉 Payment Verified Successfully! PDF Library Unlocked.');
+                            window.location.reload();
+                        } else {
+                            alert('Payment verification error: ' + resData.error);
+                        }
+                    });
+                },
+                "theme": { "color": "#F97316" }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        } else {
+            alert('Unable to initiate Razorpay order: ' + data.error);
+        }
+    })
+    .catch(function(err) {
+        alert('Network or server error while initializing Razorpay payment.');
+    });
+}
+</script>
 {% endblock %}
