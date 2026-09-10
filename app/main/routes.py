@@ -205,6 +205,10 @@ def study_materials():
 
 @main_bp.route('/notes/download/<path:filename>')
 def download_note(filename):
+    if not session.get('pdf_access_unlocked'):
+        flash('Please unlock the VIP Placement Pass via Razorpay to view or download PDF study materials.', 'warning')
+        return redirect(url_for('main.study_materials'))
+
     if filename.startswith('db:'):
         mat_id = int(filename.split(':')[1])
         mat = StudyMaterial.query.get_or_404(mat_id)
