@@ -149,6 +149,15 @@ with app.app_context():
         
         db.session.commit()
 
+        # Seed rich educational placement articles for Google AdSense compliance
+        try:
+            from app.models import CareerTip
+            from app.utils import generate_unique_slug
+            from app.rich_articles import seed_rich_articles
+            seed_rich_articles(app, db, CareerTip, generate_unique_slug)
+        except Exception as seed_err:
+            print("Auto article seed notice:", seed_err)
+
     except Exception as err:
         print("Auto DB initialization notice:", err)
 
