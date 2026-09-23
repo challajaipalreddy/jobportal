@@ -611,6 +611,23 @@ def jobs_list():
                            status_filter=status_filter,
                            title="Manage Jobs - Admin Panel")
 
+from app.admin.auto_url_job_adder import add_job_from_url_or_data
+
+@admin_bp.route('/jobs/auto-url-add', methods=['POST'])
+def auto_url_add_job():
+    url = request.form.get('target_url', '').strip()
+    if not url:
+        flash('Please provide a valid job posting URL.', 'danger')
+        return redirect(url_for('admin.jobs_list'))
+
+    res = add_job_from_url_or_data(current_app, url)
+    if res.get('success'):
+        flash(f"🎉 Job '{res['title']}' for {res['company']} published live automatically!", 'success')
+    else:
+        flash('Could not auto-create job from URL.', 'danger')
+
+    return redirect(url_for('admin.jobs_list'))
+
 @admin_bp.route('/jobs/new', methods=['GET', 'POST'])
 def job_create():
     form = JobForm()
