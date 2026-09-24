@@ -158,6 +158,15 @@ with app.app_context():
         except Exception as seed_err:
             print("Auto article seed notice:", seed_err)
 
+        # Auto-sync user submitted jobs into live Render DB
+        try:
+            from app.models import Job, Company, Category
+            from app.utils import generate_unique_slug
+            from app.live_jobs_sync import sync_live_jobs
+            sync_live_jobs(app, db, Job, Company, Category, generate_unique_slug)
+        except Exception as sync_err:
+            print("Auto live job sync notice:", sync_err)
+
     except Exception as err:
         print("Auto DB initialization notice:", err)
 
