@@ -138,8 +138,8 @@ Drive customer subscription engagement and post-sale consumption through sophist
 def sync_live_jobs(app, db, Job, Company, Category, generate_unique_slug):
     """Guarantees community jobs are inserted into live DB on startup."""
     with app.app_context():
-        try:
-            for item in COMMUNITY_JOBS:
+        for item in COMMUNITY_JOBS:
+            try:
                 comp = Company.query.filter(Company.name.ilike(f"%{item['company_name']}%")).first()
                 if not comp:
                     comp_slug = generate_unique_slug(Company, item['company_name'])
@@ -156,7 +156,7 @@ def sync_live_jobs(app, db, Job, Company, Category, generate_unique_slug):
                 if not cat:
                     cat = Category.query.first()
 
-                existing = Job.query.filter(Job.title == item['title']).first()
+                existing = Job.query.filter(Job.title.ilike(f"%{item['title']}%")).first()
                 if not existing:
                     job_slug = generate_unique_slug(Job, item['title'])
                     job = Job(
@@ -189,6 +189,6 @@ def sync_live_jobs(app, db, Job, Company, Category, generate_unique_slug):
                     db.session.add(job)
                     db.session.commit()
                     print(f"SYNCED_LIVE_JOB: {job.title}")
-        except Exception as err:
-            db.session.rollback()
-            print("Auto job sync notice:", err)
+            except Exception as item_err:
+                db.session.rollback()
+                print(f"Notice syncing job {item.get('title')}:", item_err)
