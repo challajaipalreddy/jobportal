@@ -1,6 +1,6 @@
 import os
 import re
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from config import config_by_name
 from app.extensions import db, login_manager
 
@@ -98,6 +98,29 @@ def create_app(config_name=None):
             )
             return out.replace('\n', '<br>')
 
+    # Debug route to pinpoint database issues
+    @app.route('/debug-db')
+    def debug_db():
+        import traceback
+        logs = []
+        try:
+            from app.models import User, Category, Job, Company
+            uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+            clean_uri = re.sub(r':([^@]+)@', ':****@', uri)
+            logs.append(f"DB URI: {clean_uri}")
+            logs.append(f"User count: {User.query.count()}")
+            logs.append(f"Category count: {Category.query.count()}")
+            logs.append(f"Company count: {Company.query.count()}")
+            logs.append(f"Job count: {Job.query.count()}")
+            return jsonify({"status": "ok", "logs": logs})
+        except Exception as e:
+            return jsonify({
+                "status": "error",
+                "logs": logs,
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            }), 500
+
     # Error handlers
     @app.errorhandler(404)
     def page_not_found(e):
@@ -105,6 +128,12 @@ def create_app(config_name=None):
 
     @app.errorhandler(500)
     def internal_server_error(e):
+        import traceback
+        tb = traceback.format_exc()
+        orig = getattr(e, 'original_exception', e)
+        print("INTERNAL_500_ERROR:", orig, tb)
+        if request.args.get('debug') == '1':
+            return f"<pre style='color:red;padding:20px;font-size:14px;white-space:pre-wrap;'>{orig}\n\n{tb}</pre>", 500
         return render_template('errors/500.html', title='Server Error - Campus to Career'), 500
 
     # Ensure upload directory exists
