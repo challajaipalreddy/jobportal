@@ -1,8 +1,10 @@
 # app/admin/auto_url_job_adder.py
 import re
 import urllib.request
-from datetime import datetime, timedelta
-from bs4 import BeautifulSoup
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
 from app.extensions import db
 from app.models import Job, Company, Category
 from app.utils import generate_unique_slug
